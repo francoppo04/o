@@ -27,6 +27,14 @@ Armas combinadas cuerpo a cuerpo al estilo Dead Rising, con modelos 3D propios.
 | PARE Definitivo | `ArsenalChatarra.AC_PareDefinitivo` | Contundente muy pesada, derribo casi seguro | 2.4–4.2 | Caño + 6 chatarra + 4 clavos (martillo, sierra) · Herrería 4 · loot de herramientas |
 | La Desafinada | `ArsenalChatarra.AC_LaDesafinada` | Hacha, 2 manos; cada swing hace ruido y atrae zombis | 1.5–2.6 | Solo loot (tiendas de música, salas de ensayo) |
 
+## Antes de subir cambios
+
+```
+python tools/check_scripts.py
+```
+
+Verifica los scripts como los lee el juego (comentarios anidados, llaves, ítems de recetas, modelos y archivos referenciados).
+
 ## Estructura
 
 ```
