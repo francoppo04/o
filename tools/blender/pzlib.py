@@ -214,7 +214,7 @@ def mat(name, color, rust=0.0, dirt=0.25, rough=0.7, metal=0.0, scale=18.0, stre
     L.new(n1.outputs["Color"], dark.inputs["B"])
     col = dark.outputs["Result"]
     bri = nt.nodes.new("ShaderNodeBrightContrast")
-    bri.inputs["Bright"].default_value = dirt * 0.18
+    bri.inputs["Bright"].default_value = dirt * 0.02
     L.new(col, bri.inputs["Color"])
     col = bri.outputs["Color"]
 
@@ -251,7 +251,9 @@ def mat(name, color, rust=0.0, dirt=0.25, rough=0.7, metal=0.0, scale=18.0, stre
         col = mx.outputs["Result"]
     L.new(col, bsdf.inputs["Base Color"])
     bsdf.inputs["Roughness"].default_value = rough
-    bsdf.inputs["Metallic"].default_value = metal
+    # El pase de color horneado vale base*(1-metallic): se deja en 0 para no oscurecer la textura.
+    bsdf.inputs["Metallic"].default_value = 0.0
+    m["pz_metal"] = metal
     m["pz_color"] = list(color)
     return m
 
@@ -580,8 +582,7 @@ def previews(obj, name, grip_offset=0.0, hold_rot=(0, -55, 0)):
     # --- arma tirada en el suelo
     for o in body:
         bpy.data.objects.remove(o, do_unlink=True)
-    lo3, hi3 = _bounds(obj)
-    obj.rotation_euler = Euler((math.radians(90), 0, math.radians(20)))
+    obj.rotation_euler = Euler((math.radians(-90), 0, math.radians(20)))  # cara -Y (frente) hacia arriba
     bpy.context.view_layer.update()
     lo3, hi3 = _bounds(obj)
     obj.location -= Vector(((lo3.x + hi3.x) / 2, (lo3.y + hi3.y) / 2, lo3.z))
