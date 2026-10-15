@@ -12,7 +12,7 @@ module Base
     {
         mesh    = weapons/ArsenalChatarra/AC_Hachamazo,
         texture = weapons/ArsenalChatarra/AC_Hachamazo,
-        scale   = 1.0,
+        scale   = 0.75,
 
         attachment world
         {
@@ -25,7 +25,7 @@ module Base
     {
         mesh    = weapons/ArsenalChatarra/AC_BateErizo,
         texture = weapons/ArsenalChatarra/AC_BateErizo,
-        scale   = 1.0,
+        scale   = 0.75,
 
         attachment world
         {
@@ -38,7 +38,7 @@ module Base
     {
         mesh    = weapons/ArsenalChatarra/AC_PareDefinitivo,
         texture = weapons/ArsenalChatarra/AC_PareDefinitivo,
-        scale   = 1.0,
+        scale   = 0.75,
 
         attachment world
         {
@@ -51,7 +51,7 @@ module Base
     {
         mesh    = weapons/ArsenalChatarra/AC_LaDesafinada,
         texture = weapons/ArsenalChatarra/AC_LaDesafinada,
-        scale   = 1.0,
+        scale   = 0.75,
 
         attachment world
         {
