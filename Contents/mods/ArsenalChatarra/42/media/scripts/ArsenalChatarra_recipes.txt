@@ -14,7 +14,7 @@ module ArsenalChatarra
     {
         timedAction   = Making,
         Time          = 450,
-        category      = Blacksmith,
+        category      = Blacksmithing,
         SkillRequired = Blacksmith:3,
         xpAward       = Blacksmith:40,
         Tags          = InHandCraft,
@@ -62,7 +62,7 @@ module ArsenalChatarra
     {
         timedAction   = Making,
         Time          = 500,
-        category      = Blacksmith,
+        category      = Blacksmithing,
         SkillRequired = Blacksmith:4,
         xpAward       = Blacksmith:45,
         Tags          = InHandCraft,

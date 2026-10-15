@@ -4,7 +4,7 @@
     Modelos 3D propios: media/models_X/weapons/ArsenalChatarra/*.fbx
     Texturas de modelo: media/textures/weapons/ArsenalChatarra/*.png
     Definicion de modelos: ArsenalChatarra_models.txt
-    Nombres visibles: media/lua/shared/Translate/<idioma>/ItemName.json (DisplayName = respaldo).
+    Nombres visibles: media/lua/shared/Translate/<idioma>/ItemName.json (no se usa DisplayName: obsoleto desde 42.13).
 */
 module ArsenalChatarra
 {
@@ -16,7 +16,6 @@ module ArsenalChatarra
     /* Hacha de bombero + cabeza de mazo soldada. Lenta, pesada, tala y derriba. */
     item AC_Hachamazo
     {
-        DisplayName             = Axe-Hammer,
         DisplayCategory         = Weapon,
         ItemType                = base:weapon,
         Categories              = base:axe,
@@ -36,9 +35,9 @@ module ArsenalChatarra
         MinRange                = 0.61,
         MaxRange                = 1.3,
         MinAngle                = 0.7,
-        MaxHitCount             = 2,
-        SwingTime               = 4,
-        MinimumSwingTime        = 4,
+        MaxHitcount             = 2,
+        Swingtime               = 4,
+        MinimumSwingtime        = 4,
         SwingAmountBeforeImpact = 0.02,
         CriticalChance          = 20,
         CritDmgMultiplier       = 5,
@@ -69,7 +68,6 @@ module ArsenalChatarra
     /* Bate con clavos, alambre de puas y medio disco de sierra. Rapido y desgarra. */
     item AC_BateErizo
     {
-        DisplayName             = Hedgehog Bat,
         DisplayCategory         = Weapon,
         ItemType                = base:weapon,
         Categories              = base:blunt,
@@ -89,9 +87,9 @@ module ArsenalChatarra
         MinRange                = 0.61,
         MaxRange                = 1.2,
         MinAngle                = 0.72,
-        MaxHitCount             = 3,
-        SwingTime               = 2.5,
-        MinimumSwingTime        = 2.5,
+        MaxHitcount             = 3,
+        Swingtime               = 2.5,
+        MinimumSwingtime        = 2.5,
         SwingAmountBeforeImpact = 0.02,
         CriticalChance          = 30,
         CritDmgMultiplier       = 4,
@@ -121,7 +119,6 @@ module ArsenalChatarra
     /* Senal de STOP arrancada con poste y base de concreto. Lentisima, derribo casi seguro. */
     item AC_PareDefinitivo
     {
-        DisplayName             = Final Stop,
         DisplayCategory         = Weapon,
         ItemType                = base:weapon,
         Categories              = base:blunt,
@@ -141,9 +138,9 @@ module ArsenalChatarra
         MinRange                = 0.61,
         MaxRange                = 1.45,
         MinAngle                = 0.65,
-        MaxHitCount             = 3,
-        SwingTime               = 4.5,
-        MinimumSwingTime        = 4.5,
+        MaxHitcount             = 3,
+        Swingtime               = 4.5,
+        MinimumSwingtime        = 4.5,
         SwingAmountBeforeImpact = 0.02,
         CriticalChance          = 15,
         CritDmgMultiplier       = 4,
@@ -173,7 +170,6 @@ module ArsenalChatarra
     /* Guitarra electrica con una hoja de hacha atornillada. Cada golpe hace ruido (ver Lua). */
     item AC_LaDesafinada
     {
-        DisplayName             = The Out-of-Tune,
         DisplayCategory         = Weapon,
         ItemType                = base:weapon,
         Categories              = base:axe,
@@ -193,9 +189,9 @@ module ArsenalChatarra
         MinRange                = 0.61,
         MaxRange                = 1.25,
         MinAngle                = 0.7,
-        MaxHitCount             = 2,
-        SwingTime               = 3,
-        MinimumSwingTime        = 3,
+        MaxHitcount             = 2,
+        Swingtime               = 3,
+        MinimumSwingtime        = 3,
         SwingAmountBeforeImpact = 0.02,
         CriticalChance          = 25,
         CritDmgMultiplier       = 5,
