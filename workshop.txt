@@ -1,0 +1,6 @@
+version=1
+workshopid=0
+title=Arsenal de Chatarra
+description=Armas cuerpo a cuerpo unicas hechas con chatarra: Machete de Sierra, Hacha Remachada, Mazo de Senal de Pare, Bate Encadenado y Estoque de Barra. Build 42.
+visibility=public
+tags=Build 42;Weapons;Items

@@ -1,0 +1,133 @@
+/*
+    Arsenal de Chatarra - recetas de fabricacion.
+    Cada arma se hace mejorando un arma vanilla (o desde chatarra).
+    Los nombres visibles salen de Translate/<idioma>/Recipes.json (clave = nombre exacto de la receta).
+*/
+module ArsenalChatarra
+{
+    imports
+    {
+        Base
+    }
+
+    craftRecipe AC_MakeMacheteSierra
+    {
+        timedAction   = Making,
+        Time          = 300,
+        category      = Blacksmith,
+        SkillRequired = Blacksmith:2,
+        xpAward       = Blacksmith:25,
+        Tags          = InHandCraft,
+        needToBeLearn = false,
+
+        inputs
+        {
+            item 1 [Base.Machete],
+            item 2 [Base.ScrapMetal],
+            item 1 tags[base:hammer] mode:keep,
+            item 1 tags[base:saw] mode:keep,
+        }
+
+        outputs
+        {
+            item 1 ArsenalChatarra.AC_MacheteSierra,
+        }
+    }
+
+    craftRecipe AC_MakeHachaRemachada
+    {
+        timedAction   = Making,
+        Time          = 350,
+        category      = Blacksmith,
+        SkillRequired = Blacksmith:2,
+        xpAward       = Blacksmith:30,
+        Tags          = InHandCraft,
+        needToBeLearn = false,
+
+        inputs
+        {
+            item 1 [Base.Axe],
+            item 2 [Base.ScrapMetal],
+            item 6 [Base.Nails],
+            item 1 tags[base:hammer] mode:keep,
+        }
+
+        outputs
+        {
+            item 1 ArsenalChatarra.AC_HachaRemachada,
+        }
+    }
+
+    craftRecipe AC_MakeMazoSenal
+    {
+        timedAction   = Making,
+        Time          = 450,
+        category      = Blacksmith,
+        SkillRequired = Blacksmith:3,
+        xpAward       = Blacksmith:40,
+        Tags          = InHandCraft,
+        needToBeLearn = false,
+
+        inputs
+        {
+            item 1 [Base.Pipe],
+            item 4 [Base.ScrapMetal],
+            item 8 [Base.Nails],
+            item 1 tags[base:hammer] mode:keep,
+            item 1 tags[base:saw] mode:keep,
+        }
+
+        outputs
+        {
+            item 1 ArsenalChatarra.AC_MazoSenal,
+        }
+    }
+
+    craftRecipe AC_MakeBateEncadenado
+    {
+        timedAction   = Making,
+        Time          = 250,
+        category      = Carpentry,
+        SkillRequired = Woodwork:1,
+        xpAward       = Woodwork:20,
+        Tags          = InHandCraft,
+        needToBeLearn = false,
+
+        inputs
+        {
+            item 1 [Base.BaseballBat],
+            item 2 [Base.ScrapMetal],
+            item 6 [Base.Nails],
+            item 1 tags[base:hammer] mode:keep,
+        }
+
+        outputs
+        {
+            item 1 ArsenalChatarra.AC_BateEncadenado,
+        }
+    }
+
+    craftRecipe AC_MakeEstoqueBarra
+    {
+        timedAction   = Making,
+        Time          = 300,
+        category      = Blacksmith,
+        SkillRequired = Blacksmith:3,
+        xpAward       = Blacksmith:30,
+        Tags          = InHandCraft,
+        needToBeLearn = false,
+
+        inputs
+        {
+            item 2 [Base.ScrapMetal],
+            item 1 [Base.SmallHandle],
+            item 1 [Base.RippedSheets],
+            item 1 tags[base:hammer] mode:keep,
+        }
+
+        outputs
+        {
+            item 1 ArsenalChatarra.AC_EstoqueBarra,
+        }
+    }
+}
