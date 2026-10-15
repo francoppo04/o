@@ -1,6 +1,6 @@
 /*
-    Arsenal de Chatarra - recetas de fabricacion.
-    Cada arma se hace mejorando un arma vanilla (o desde chatarra).
+    Arsenal de Chatarra - recetas de fabricacion (combos).
+    La Desafinada no tiene receta: solo aparece como loot (tiendas de musica, salas de ensayo).
     Los nombres visibles salen de Translate/<idioma>/Recipes.json (clave = nombre exacto de la receta).
 */
 module ArsenalChatarra
@@ -10,55 +10,7 @@ module ArsenalChatarra
         Base
     }
 
-    craftRecipe AC_MakeMacheteSierra
-    {
-        timedAction   = Making,
-        Time          = 300,
-        category      = Blacksmith,
-        SkillRequired = Blacksmith:2,
-        xpAward       = Blacksmith:25,
-        Tags          = InHandCraft,
-        needToBeLearn = false,
-
-        inputs
-        {
-            item 1 [Base.Machete],
-            item 2 [Base.ScrapMetal],
-            item 1 tags[base:hammer] mode:keep,
-            item 1 tags[base:saw] mode:keep,
-        }
-
-        outputs
-        {
-            item 1 ArsenalChatarra.AC_MacheteSierra,
-        }
-    }
-
-    craftRecipe AC_MakeHachaRemachada
-    {
-        timedAction   = Making,
-        Time          = 350,
-        category      = Blacksmith,
-        SkillRequired = Blacksmith:2,
-        xpAward       = Blacksmith:30,
-        Tags          = InHandCraft,
-        needToBeLearn = false,
-
-        inputs
-        {
-            item 1 [Base.Axe],
-            item 2 [Base.ScrapMetal],
-            item 6 [Base.Nails],
-            item 1 tags[base:hammer] mode:keep,
-        }
-
-        outputs
-        {
-            item 1 ArsenalChatarra.AC_HachaRemachada,
-        }
-    }
-
-    craftRecipe AC_MakeMazoSenal
+    craftRecipe AC_MakeHachamazo
     {
         timedAction   = Making,
         Time          = 450,
@@ -70,64 +22,64 @@ module ArsenalChatarra
 
         inputs
         {
-            item 1 [Base.Pipe],
-            item 4 [Base.ScrapMetal],
-            item 8 [Base.Nails],
+            item 1 [Base.Axe],
+            item 1 [Base.Sledgehammer],
+            item 2 [Base.ScrapMetal],
             item 1 tags[base:hammer] mode:keep,
-            item 1 tags[base:saw] mode:keep,
         }
 
         outputs
         {
-            item 1 ArsenalChatarra.AC_MazoSenal,
+            item 1 ArsenalChatarra.AC_Hachamazo,
         }
     }
 
-    craftRecipe AC_MakeBateEncadenado
+    craftRecipe AC_MakeBateErizo
     {
         timedAction   = Making,
-        Time          = 250,
+        Time          = 300,
         category      = Carpentry,
-        SkillRequired = Woodwork:1,
-        xpAward       = Woodwork:20,
+        SkillRequired = Woodwork:2,
+        xpAward       = Woodwork:25,
         Tags          = InHandCraft,
         needToBeLearn = false,
 
         inputs
         {
             item 1 [Base.BaseballBat],
+            item 12 [Base.Nails],
             item 2 [Base.ScrapMetal],
-            item 6 [Base.Nails],
             item 1 tags[base:hammer] mode:keep,
         }
 
         outputs
         {
-            item 1 ArsenalChatarra.AC_BateEncadenado,
+            item 1 ArsenalChatarra.AC_BateErizo,
         }
     }
 
-    craftRecipe AC_MakeEstoqueBarra
+    craftRecipe AC_MakePareDefinitivo
     {
         timedAction   = Making,
-        Time          = 300,
+        Time          = 500,
         category      = Blacksmith,
-        SkillRequired = Blacksmith:3,
-        xpAward       = Blacksmith:30,
+        SkillRequired = Blacksmith:4,
+        xpAward       = Blacksmith:45,
         Tags          = InHandCraft,
         needToBeLearn = false,
 
         inputs
         {
-            item 2 [Base.ScrapMetal],
-            item 1 [Base.SmallHandle],
-            item 1 [Base.RippedSheets],
+            item 1 [Base.Pipe],
+            item 6 [Base.ScrapMetal],
+            item 4 [Base.Nails],
             item 1 tags[base:hammer] mode:keep,
+            item 1 tags[base:saw] mode:keep,
         }
 
         outputs
         {
-            item 1 ArsenalChatarra.AC_EstoqueBarra,
+            item 1 ArsenalChatarra.AC_PareDefinitivo,
         }
     }
 }

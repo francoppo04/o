@@ -5,11 +5,15 @@
 require "Items/ProceduralDistributions"
 
 local LOOT = {
-    -- lista vanilla           = { {item, peso}, ... }
-    GarageTools     = { {"ArsenalChatarra.AC_MacheteSierra", 0.5}, {"ArsenalChatarra.AC_BateEncadenado", 0.8} },
-    CrateTools      = { {"ArsenalChatarra.AC_HachaRemachada", 0.4}, {"ArsenalChatarra.AC_MazoSenal", 0.3} },
-    ToolStoreTools  = { {"ArsenalChatarra.AC_HachaRemachada", 0.3}, {"ArsenalChatarra.AC_EstoqueBarra", 0.5} },
-    CampingStoreGear = { {"ArsenalChatarra.AC_MacheteSierra", 0.4} },
+    -- lista vanilla            = { {item, peso}, ... }
+    GarageTools         = { {"ArsenalChatarra.AC_BateErizo", 0.6}, {"ArsenalChatarra.AC_Hachamazo", 0.2} },
+    CrateTools          = { {"ArsenalChatarra.AC_Hachamazo", 0.3}, {"ArsenalChatarra.AC_PareDefinitivo", 0.2} },
+    ToolStoreTools      = { {"ArsenalChatarra.AC_PareDefinitivo", 0.2} },
+    FireStorageTools    = { {"ArsenalChatarra.AC_Hachamazo", 1.0} },
+    MusicStoreOthers    = { {"ArsenalChatarra.AC_LaDesafinada", 0.8} },
+    MusicStoreGuitar    = { {"ArsenalChatarra.AC_LaDesafinada", 1.0} },
+    BandPracticeInstruments = { {"ArsenalChatarra.AC_LaDesafinada", 1.0} },
+    CrateInstruments    = { {"ArsenalChatarra.AC_LaDesafinada", 0.6} },
 }
 
 local function addLoot()

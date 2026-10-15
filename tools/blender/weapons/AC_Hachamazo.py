@@ -23,8 +23,8 @@ X_END = -0.085        # extremo inferior del mango (pomo de goma)
 X_TOP = 0.835         # extremo superior del mango (asoma apenas del ojo)
 HX = 0.785            # eje de la cabeza (centro del ojo) sobre X
 EYE_W, EYE_D, EYE_H = 0.092, 0.060, 0.100     # ojo: ancho en X, espesor en Y, alto en Z
-MAL_W, MAL_D, MAL_H = 0.106, 0.088, 0.150     # bloque de mazo (exagerado ~10% para leerse en juego)
-R_HANDLE = 0.0195
+MAL_W, MAL_D, MAL_H = 0.112, 0.090, 0.165     # bloque de mazo (exagerado ~15% para leerse en juego)
+R_HANDLE = 0.0205
 
 
 # ------------------------------------------------------------- materiales
@@ -228,8 +228,8 @@ def materials():
     M["yellow"] = y
     M["rubber"] = tame(pz.mat("goma", (0.016, 0.016, 0.018), dirt=.35, rough=.9, scale=30, seed=2), .004)
     st = tame(pz.mat("acero_mazo", (0.24, 0.245, 0.255), rust=.42, dirt=.4, rough=.5, scale=20, seed=3), .01)
-    add_splat(st, (0.26, 0.085, 0.025), .75, 16, 13.0, mask=z_mask(0.06, 0.14))     # óxido junto a la soldadura
-    add_splat(st, DRIED, .45, 30, 4.0, mask=z_mask(0.20, 0.17))                    # sangre cerca de la cara
+    add_splat(st, (0.26, 0.085, 0.025), .75, 16, 13.0, mask=z_mask(0.06, 0.15))     # óxido junto a la soldadura
+    add_splat(st, DRIED, .45, 30, 4.0, mask=z_mask(0.215, 0.18))                    # sangre cerca de la cara
     edge_wear(st, (0.52, 0.53, 0.54), .9)
     M["steel"] = st
     fc = tame(pz.mat("cara_golpe", (0.34, 0.345, 0.35), rust=.15, dirt=.35, rough=.4, scale=40, seed=10), .0)

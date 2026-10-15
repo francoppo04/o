@@ -1,0 +1,62 @@
+/*
+    Arsenal de Chatarra - modelos 3D.
+    Se definen en module Base (con prefijo AC_) para que WeaponSprite / WorldStaticModel
+    los encuentren por nombre corto, como los modelos vanilla.
+    mesh    -> media/models_X/<ruta>.fbx  (sin extension)
+    texture -> media/textures/<ruta>.png  (sin extension)
+    Para ajustar tamano o posicion: scale y attachment world (o el Attachment Editor en modo debug).
+*/
+module Base
+{
+    model AC_Hachamazo
+    {
+        mesh    = weapons/ArsenalChatarra/AC_Hachamazo,
+        texture = weapons/ArsenalChatarra/AC_Hachamazo,
+        scale   = 1.0,
+
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AC_BateErizo
+    {
+        mesh    = weapons/ArsenalChatarra/AC_BateErizo,
+        texture = weapons/ArsenalChatarra/AC_BateErizo,
+        scale   = 1.0,
+
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AC_PareDefinitivo
+    {
+        mesh    = weapons/ArsenalChatarra/AC_PareDefinitivo,
+        texture = weapons/ArsenalChatarra/AC_PareDefinitivo,
+        scale   = 1.0,
+
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AC_LaDesafinada
+    {
+        mesh    = weapons/ArsenalChatarra/AC_LaDesafinada,
+        texture = weapons/ArsenalChatarra/AC_LaDesafinada,
+        scale   = 1.0,
+
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+}

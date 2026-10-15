@@ -1,7 +1,5 @@
 {
-    "AC_MakeMacheteSierra": "Make Sawtooth Machete",
-    "AC_MakeHachaRemachada": "Make Riveted War Axe",
-    "AC_MakeMazoSenal": "Make Stop Sign Maul",
-    "AC_MakeBateEncadenado": "Make Chain-Wrapped Bat",
-    "AC_MakeEstoqueBarra": "Make Rebar Stiletto"
+    "AC_MakeHachamazo": "Make Axe-Hammer",
+    "AC_MakeBateErizo": "Make Hedgehog Bat",
+    "AC_MakePareDefinitivo": "Make Final Stop"
 }

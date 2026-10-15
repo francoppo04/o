@@ -1,7 +1,5 @@
 {
-    "AC_MakeMacheteSierra": "Fabricar Machete de Sierra",
-    "AC_MakeHachaRemachada": "Fabricar Hacha Remachada",
-    "AC_MakeMazoSenal": "Fabricar Mazo de Señal de Pare",
-    "AC_MakeBateEncadenado": "Fabricar Bate Encadenado",
-    "AC_MakeEstoqueBarra": "Fabricar Estoque de Barra"
+    "AC_MakeHachamazo": "Fabricar Hachamazo",
+    "AC_MakeBateErizo": "Fabricar Bate Erizo",
+    "AC_MakePareDefinitivo": "Fabricar PARE Definitivo"
 }

@@ -1,7 +1,6 @@
 {
-    "ArsenalChatarra.AC_MacheteSierra": "Machete de Sierra",
-    "ArsenalChatarra.AC_HachaRemachada": "Hacha Remachada",
-    "ArsenalChatarra.AC_MazoSenal": "Mazo de Señal de Pare",
-    "ArsenalChatarra.AC_BateEncadenado": "Bate Encadenado",
-    "ArsenalChatarra.AC_EstoqueBarra": "Estoque de Barra"
+    "ArsenalChatarra.AC_Hachamazo": "Hachamazo",
+    "ArsenalChatarra.AC_BateErizo": "Bate Erizo",
+    "ArsenalChatarra.AC_PareDefinitivo": "PARE Definitivo",
+    "ArsenalChatarra.AC_LaDesafinada": "La Desafinada"
 }

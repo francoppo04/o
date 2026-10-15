@@ -45,7 +45,7 @@ PROFILE = [
 TAPE = (0.040, 0.273)
 
 # Disco de sierra (en coordenadas x desde la perilla)
-DISC_X = 0.715
+DISC_X = 0.735
 DISC_Z = 0.054
 DISC_R = 0.090
 DISC_T = 0.0034
@@ -142,7 +142,7 @@ def gmat(name, color, grime=.3, grime_scale=10.0, grain=0.0, grain_scale=4.0, ru
     col = rgb(color)
     if grain:
         f = noise(grain_scale, 1.0, stretch=(1, 18, 18), detail=4, r=.55)
-        g = ramp(f, [(0.28, (1 - grain,)), (0.46, (1,)), (0.60, (1,)), (0.78, (1 - grain * .8,))])
+        g = ramp(f, [(0.40, (1 - grain,)), (0.47, (1,)), (0.55, (1,)), (0.63, (1 - grain * .8,))])
         col = mix(col, g, blend="MULTIPLY")
     if tape:
         pitch, line, dark = tape
@@ -284,7 +284,7 @@ def radial_of(p):
 pz.reset()
 
 cx, cz = wx(DISC_X), DISC_Z
-m_wood = gmat("madera", (0.52, 0.31, 0.15), grime=.28, grime_scale=9, grain=.42, grain_scale=3.5, seed=1.0,
+m_wood = gmat("madera", (0.45, 0.265, 0.125), grime=.28, grime_scale=9, grain=.42, grain_scale=3.5, seed=1.0,
               blood=.45, blood_scale=11, blood_x=(0.25, 0.70, 0.11))
 m_tape = gmat("cinta", (0.60, 0.565, 0.47), grime=.26, grime_scale=14, seed=3.0, tape=(0.024, .18, .58),
               blood=.12, blood_scale=16)
@@ -292,8 +292,8 @@ m_nail = gmat("clavos", (0.31, 0.315, 0.33), grime=.25, grime_scale=30, rust=.35
               blood=.30, blood_scale=30)
 m_wire = gmat("alambre", (0.13, 0.125, 0.12), grime=.2, grime_scale=30, rust=.55, rust_scale=40, seed=4.0,
               blood=.25, blood_scale=30)
-m_disc = gmat("disco", (0.40, 0.41, 0.43), grime=.22, grime_scale=22, rust=.20, rust_scale=26, seed=5.0,
-              blood=.40, blood_scale=17, blood_x=(0.045, 0.085, 0.14),
+m_disc = gmat("disco", (0.31, 0.32, 0.34), grime=.22, grime_scale=22, rust=.20, rust_scale=26, seed=5.0,
+              blood=.50, blood_scale=17, blood_x=(0.045, 0.085, 0.08),
               radial=((cx, cz), [(0.0, (.50,)), (0.026, (.58,)), (0.029, (.95,)), (0.068, (.95,)),
                                  (0.071, (1.30,)), (0.2, (1.30,))]))
 m_nut = gmat("tuerca", (0.12, 0.12, 0.13), grime=.2, grime_scale=40, rust=.3, rust_scale=50, seed=6.0)
@@ -325,7 +325,7 @@ for ri, xr in enumerate(rows):
         tilt = math.radians(rng.uniform(-14, 14))
         d = (radial * math.cos(tilt) + Vector((1, 0, 0)) * math.sin(tilt)).normalized()
         base = Vector((wx(x), 0, 0)) + radial * (R - 0.001)
-        parts.append(spike(f"clavo{n}", base, d, rng.uniform(0.074, 0.088), 0.0050, m_nail,
+        parts.append(spike(f"clavo{n}", base, d, rng.uniform(0.080, 0.094), 0.0058, m_nail,
                            twist=rng.uniform(0, 1.5)))
         n += 1
 
@@ -334,7 +334,7 @@ bm = bmesh.new()
 W_R = 0.0030
 x0, x1 = 0.425, 0.800
 turns = 6.0
-per_turn = 8
+per_turn = 10
 steps = int(turns * per_turn)
 pts = []
 for i in range(steps + 1):
@@ -346,8 +346,8 @@ for i in range(steps + 1):
         rr = radius_at(xr) - 0.004   # las puntas del alambre quedan metidas en la madera
     pts.append(Vector((wx(xr), math.cos(ang) * rr, math.sin(ang) * rr)))
 tube(bm, pts, W_R, sides=4, up_fn=radial_of)
-# púas del alambre: una "X" cada 4 vértices
-for i in range(3, steps - 1, 4):
+# púas del alambre: una "X" cada 5 vértices
+for i in range(3, steps - 1, 5):
     p = pts[i]
     t = (pts[i + 1] - pts[i - 1]).normalized()
     rho = radial_of(p)
@@ -356,7 +356,7 @@ for i in range(3, steps - 1, 4):
     bipyramid(bm, c, (rho * 0.7 + q), 0.016, 0.0018)
     bipyramid(bm, c, (rho * 0.7 - q), 0.016, 0.0018)
 bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-parts.append(mk("alambre", bm, m_wire))
+parts.append(mk("alambre", bm, m_wire, smooth=True))
 
 # --- medio disco de sierra clavado arriba, cerca de la punta
 teeth = 20
