@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Arsenal de Chatarra: ataque propio. Copia la estructura de los nodos vanilla de ataque
      (melee/2handed/2HDefault.xml) y agrega la condicion ACWeapon, que fija el Lua del mod al
-     equipar el arma; con prioridad 5 reemplaza solo el golpe de esta arma. -->
+     equipar el arma. El motor elige el nodo por m_ConditionPriority y despues por cantidad de
+     condiciones (AnimNode.compareSelectionConditions): con 10 le gana a las variantes vanilla.
+     Un solo AttackCollisionCheck, en el frame de impacto (lo escribe tools/blender/animkit.write_animset). -->
 <animNode>
-	<m_Name>AC_RemoMolinete</m_Name>
+	<m_Name>AC_RemoTajo</m_Name>
 	<m_Priority>5</m_Priority>
 	<m_ConditionPriority>10</m_ConditionPriority>
-	<m_AnimName>Bob_AC_RemoMolinete</m_AnimName>
+	<m_AnimName>Bob_AC_RemoTajo</m_AnimName>
 	<m_Looped>false</m_Looped>
 	<m_BlendTime>0.15</m_BlendTime>
 	<m_BlendOutTime>0.25</m_BlendOutTime>
@@ -22,20 +24,15 @@
 		<m_Type>BOOL</m_Type>
 		<m_Value>false</m_Value>
 	</m_Conditions>
+	<m_Events x_name="1b85f146-a1e6-53c4-a9ef-7e747e6678a8">
+		<m_EventName>AttackCollisionCheck</m_EventName>
+		<m_TimePc>0.3000</m_TimePc>
+		<m_ParameterValue>MeleeSwing</m_ParameterValue>
+	</m_Events>
 	<m_Events x_name="3b638519-b49c-53d7-91e7-8c0723c54a28">
 		<m_EventName>SetVariable</m_EventName>
 		<m_TimePc>0.1</m_TimePc>
 		<m_ParameterValue>ZombieHitReaction=HeadLeft</m_ParameterValue>
-	</m_Events>
-	<m_Events x_name="fb64f698-f7e5-51d1-a941-b7d2f280da17">
-		<m_EventName>AttackCollisionCheck</m_EventName>
-		<m_TimePc>0.38</m_TimePc>
-		<m_ParameterValue>MeleeSwing</m_ParameterValue>
-	</m_Events>
-	<m_Events x_name="f18d0b47-39bc-58ed-920e-8a4f4ebc5560">
-		<m_EventName>AttackCollisionCheck</m_EventName>
-		<m_TimePc>0.75</m_TimePc>
-		<m_ParameterValue>MeleeSwing</m_ParameterValue>
 	</m_Events>
 	<m_Events x_name="246f4a1b-4811-5d6e-9b6d-e6b4d1e3613b">
 		<m_EventName>BlockMovement</m_EventName>

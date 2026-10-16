@@ -60,7 +60,8 @@ class Track:
     """Canal animado: {frame: valor} (float o Vector). Spline Catmull-Rom entre keys, con easing
     opcional por tramo: ease={frame_inicio_del_tramo: 'in'|'out'|'io'|...}."""
 
-    def __init__(self, keys, ease=None, default="io"):
+    def __init__(self, keys, ease=None, default="io", hold=False):
+        self.hold = hold     # True: tramo suavizado entre dos keys sin tangentes (no se pasa de largo)
         self.f = sorted(keys)
         self.v = [keys[k] if not isinstance(keys[k], (tuple, list)) else Vector(keys[k]) for k in self.f]
         self.ease = ease or {}
@@ -75,6 +76,8 @@ class Track:
         i = max(j for j in range(len(f) - 1) if f[j] <= frame)
         t = (frame - f[i]) / (f[i + 1] - f[i])
         t = EASE[self.ease.get(f[i], self.default)](t)
+        if self.hold:
+            return v[i] + (v[i + 1] - v[i]) * t
         p0 = v[max(i - 1, 0)]
         p3 = v[min(i + 2, len(v) - 1)]
         return _cr(p0, v[i], v[i + 1], p3, t)
@@ -92,6 +95,21 @@ def timewarp(pairs):
                 return fa + (fb - fa) * (frame - a) / (b - a)
         return pairs[-1][1]
     return fn
+
+
+def _blend(a, b, w):
+    """Mezcla dos matrices (posición lineal, rotación slerp)."""
+    qa, qb = a.to_quaternion(), b.to_quaternion()
+    if qa.dot(qb) < 0:
+        qb.negate()
+    m = qa.slerp(qb, w).to_matrix().to_4x4()
+    m.translation = a.translation.lerp(b.translation, w)
+    return m
+
+
+def raised_cos(x, width):
+    """1 en x=0, 0 desde |x| >= width, suave."""
+    return 0.0 if abs(x) >= width else 0.5 * (1 + math.cos(math.pi * x / width))
 
 
 def _about(pivot, rot3):
@@ -126,6 +144,9 @@ GRIP_REF = {
     "fists": ("Bob_WalkBwd_AttackKnife01_Hit", 1),
 }
 
+ELBOW_SMOOTH = 0.6     # filtro temporal del polo del codo (0 = codo de la base, cuadro a cuadro)
+ELBOW_MAX_STEP = 6.0   # grados por key que puede girar el polo del codo
+
 SPINE = ("Bip01_Spine", "Bip01_Spine1", "Bip01_Neck")
 SPINE_W = (0.30, 0.45, 0.25)
 
@@ -150,6 +171,7 @@ class Body:
         self.grip_r = P["Bip01_Prop1"].inverted() @ P["Bip01_R_Hand"]
         self.grip_l = P["Bip01_Prop1"].inverted() @ P["Bip01_L_Hand"]
         self.guard = P["Bip01_Prop1"].copy()
+        self.guard_pose = P
         if grip in ("1h", "fists"):   # mano izquierda libre: su relación con Prop2
             self.grip_l = P["Bip01_Prop2"].inverted() @ P["Bip01_L_Hand"]
         # puño en el espacio de cada prop (para los guantes), con los dedos de la pose vanilla
@@ -225,6 +247,12 @@ class Body:
     # ---------------------------------------------------------- capas
     def base_pose(self, frame):
         P = al.x_pose(self.base, self.warp(frame))
+        w = self.guard_weight(frame) if hasattr(self, "guard_weight") else 0.0
+        if w > 0:
+            G = self.guard_pose
+            for b in P:
+                if b in G:
+                    P[b] = _blend(P[b], G[b], w)
         for b in self.order:
             if b.name in P:
                 self._set(b.name, P[b.name])
@@ -271,7 +299,8 @@ class Body:
 
     def arm(self, side, hand_m, elbow=None):
         """Brazo por IK hasta la matriz de mano; el codo mira hacia `elbow` (vector) o hacia donde
-        estaba en la base."""
+        estaba en la base. La torsión del antebrazo (pronación/supinación) sigue a la mano: así no
+        hereda giros de la animación base que la mano ya no hace."""
         up, fo, ha = (f"Bip01_{side}_UpperArm", f"Bip01_{side}_Forearm", f"Bip01_{side}_Hand")
         sh = self.M(up).translation
         if elbow is None:
@@ -280,9 +309,44 @@ class Body:
             pole = el - mid
             if pole.length < 1:
                 pole = Vector((0.3 * (1 if side == "L" else -1), 0.4, -1))
+            # el codo de la base está pensado para la mano de la base, no para la nuestra: se filtra en
+            # el tiempo para que no salte cuando las dos manos difieren (keys en orden creciente)
+            prev = getattr(self, "_pole", {}).get(side)
+            pole = pole.normalized()
+            if prev is not None and getattr(self, "_pole_frame", {}).get(side, -1) < self.frame:
+                pole = (prev * ELBOW_SMOOTH + pole * (1 - ELBOW_SMOOTH)).normalized()
+                # el polo no puede girar más de ELBOW_MAX_STEP grados por key (evita que el codo se dé vuelta)
+                u = (hand_m.translation - sh).normalized()
+                a = (prev - u * prev.dot(u)).normalized()
+                b = (pole - u * pole.dot(u)).normalized()
+                ang = a.angle(b) if a.length and b.length else 0.0
+                lim = math.radians(ELBOW_MAX_STEP)
+                if ang > lim:
+                    pole = a.slerp(b, lim / ang) if hasattr(a, "slerp") else (a * (1 - lim / ang) + b * (lim / ang)).normalized()
+            self.__dict__.setdefault("_pole", {})[side] = pole
+            self.__dict__.setdefault("_pole_frame", {})[side] = self.frame
         else:
             pole = Vector(elbow)
+        base_fo, base_ha = self.M(fo), self.M(ha)
         self.two_bone((up, fo, ha), hand_m.translation, pole, hand_m)
+        # pronación: la torsión que la muñeca tendría que hacer DE MÁS respecto de la base pasa al
+        # antebrazo (en la base vanilla la muñeca ya trae su propia torsión: esa se respeta)
+        rel = (self.rest[fo].inverted() @ self.rest[ha]).to_3x3()
+
+        def wrist_twist(fore, hand):
+            resid = hand.to_quaternion() @ (fore.to_3x3() @ rel).to_quaternion().inverted()
+            axis = (hand.translation - fore.translation).normalized()
+            t = 2 * math.atan2(Vector(resid[1:]).dot(axis), resid[0])
+            return (t + math.pi) % (2 * math.pi) - math.pi, axis
+
+        tb, _ = wrist_twist(base_fo, base_ha)
+        cur = self.M(fo)
+        tn, axis = wrist_twist(cur, hand_m)
+        d = (tn - tb + math.pi) % (2 * math.pi) - math.pi
+        self._set(fo, _about(cur.translation, Matrix.Rotation(d, 3, axis)) @ cur)
+        m = hand_m.copy()
+        m.translation = self.M(ha).translation
+        self._set(ha, m)
 
     def weapon(self, prop_m, left=None, left_m=None, elbow_r=None, elbow_l=None):
         """Arma en Bip01_Prop1 = prop_m; mano derecha con el agarre vanilla; la izquierda a `left` cm
@@ -317,11 +381,18 @@ class Body:
         return m
 
     def key(self, frame):
+        """Keyea todos los huesos. Cada cuaternión se pone en el mismo hemisferio que el del frame
+        anterior (q y -q son la misma rotación, pero interpolar entre q y -q da la vuelta larga)."""
+        prev = getattr(self, "_prevq", {})
         for b in self.order:
+            q = b.rotation_quaternion.copy()
+            if b.name in prev and q.dot(prev[b.name]) < 0:
+                q.negate()
+                b.rotation_quaternion = q
+            prev[b.name] = q.copy()
             b.keyframe_insert("location", frame=frame)
             b.keyframe_insert("rotation_quaternion", frame=frame)
-            if b.rotation_mode != "QUATERNION":
-                b.rotation_mode = "QUATERNION"
+        self._prevq = prev
 
     def finish(self, start, end):
         a = self.action
@@ -413,7 +484,7 @@ def build(spec, preview=False):
     feet_keys = getattr(spec, "FEET", {1: {}, spec.FRAMES: {}})
     FT = {s: Track({f: Vector((list(v.get(s, ())) + [0, 0, 0, 0])[:4]) for f, v in feet_keys.items()}, ease) for s in "RL"}
     left = getattr(spec, "LEFT", None)
-    LT = Track(left, ease) if left else None
+    LT = Track(left, ease, hold=True) if left else None     # agarre: sin rebote
 
     if hasattr(spec, "FISTS"):
         fk = {}
@@ -439,14 +510,22 @@ def build(spec, preview=False):
             FP[s] = (Track({f: Vector(v[0]) for f, v in keys.items()}, ease),
                      Track({f: Vector(v[1]) for f, v in keys.items()}, ease),
                      Track({f: Vector(v[2]) for f, v in keys.items()}, ease))
+    elif getattr(spec, "BASE_WEAPON", False):
+        path = base_weapon_path(spec, body, ease)
     else:
         wk = {}
         for f, v in spec.WEAPON_KEYS.items():
             wk[f] = (guard_grip, guard_tip, guard_face) if v == "guard" else v
         path = WeaponPath(wk, ease)
 
+    # primer y último frame = guardia vanilla exacta (el juego mezcla desde/hacia el idle de apuntar)
+    gb = getattr(spec, "GUARD_BLEND", 3)
+    body.guard_weight = lambda f: max(raised_cos(f - 1, gb), raised_cos(f - spec.FRAMES, gb))
+
     reach = {}
-    for f in range(1, spec.FRAMES + 1):
+    sub = getattr(spec, "KEYS_PER_FRAME", 2)     # keys por frame de 30 fps (2 = 60 keys/s)
+    for k in range(1, (spec.FRAMES - 1) * sub + 2):
+        f = 1 + (k - 1) / sub
         body.frame = f
         body.overreach = 0.0
         body.overreach_who = ""
@@ -458,35 +537,40 @@ def build(spec, preview=False):
             mats = {s: body.fist(s, FP[s][0](f), FP[s][1](f), FP[s][2](f)) for s in "RL"}
             body.props(mats["R"], mats["L"])
         else:
-            body.weapon(path(f), left=LT(f) if LT else None)
+            body.weapon(path(f), left=LT(f) if LT else None,
+                        elbow_r=getattr(spec, "ELBOW_R", None), elbow_l=getattr(spec, "ELBOW_L", None))
         if body.overreach > 0.5:
             reach[f] = f"{body.overreach_who}:{body.overreach:.0f}"
-        body.key(f)
+        body.key(k)
     if reach:
         print(f"[animkit] {spec.NAME}: brazos/piernas estirados de más (cm) {reach}")
-    action = body.finish(1, spec.FRAMES)
+    action = body.finish(1, (spec.FRAMES - 1) * sub + 1)
+    rig["keys_per_frame"] = sub         # la escena va a 30*sub fps; el frame f de 30 fps es el 1+(f-1)*sub
+    bpy.context.scene.render.fps = al.FPS * sub
     out = al.ROOT / "art" / "anims"
-    al.export_glb(rig, action, out / f"{spec.NAME}.glb")
+    al.export_glb(rig, action, out / f"{spec.NAME}.glb", fps=al.FPS * sub)
+    if (out / f"{spec.NAME}.glb").exists():
+        al.fix_glb_hemispheres(out / f"{spec.NAME}.glb")
     if preview:
         if hasattr(spec, "FISTS"):
             al.attach_weapon(rig, spec.WEAPON)
             al.attach_weapon(rig, spec.WEAPON + "L", bone="Bip01_Prop2", tex_id=spec.WEAPON)
         else:
             al.attach_weapon(rig, spec.WEAPON)
-        frames = sorted(set(list(range(1, spec.FRAMES + 1, 3)) + list(getattr(spec, "HITS", ())) + [spec.FRAMES]))
-        preview_sheet(rig, frames, out / f"{spec.NAME}_sheet.png",
-                      gif=out / f"{spec.NAME}.gif", hits=getattr(spec, "HITS", ()))
+        frames = sorted(set(list(range(1, spec.FRAMES + 1, 2)) + list(getattr(spec, "HITS", ())) + [spec.FRAMES]))
+        preview_sheet(rig, frames, out / f"{spec.NAME}_sheet.png", gif=out / f"{spec.NAME}.gif",
+                      hits=getattr(spec, "HITS", ()), target=getattr(spec, "TARGET", None), sub=sub)
     return rig, action
 
 
-def preview_sheet(rig, frames, out_png, gif=None, hits=(), size=300):
-    """Dos vistas por frame: 3/4 desde adelante-derecha (como suele verse en el juego) y cenital.
-    Un poste rojo marca dónde estaría el zombi (45 cm adelante). Los frames de golpe van con borde."""
+def preview_sheet(rig, frames, out_png, gif=None, hits=(), size=260, target=None, sub=1):
+    """Hoja de contacto: por cada frame (de 30 fps) tres vistas — de frente, de costado (lado derecho
+    del personaje) y desde arriba. El cilindro rojo es el objetivo (TARGET); los frames de impacto van
+    con borde rojo. sub = keys por frame de la acción."""
     from PIL import Image, ImageDraw
     sc = bpy.context.scene
     sc.render.engine = "CYCLES"   # EEVEE necesita EGL, no disponible sin pantalla
-    if sc.render.engine == "CYCLES":
-        sc.cycles.samples = 6
+    sc.cycles.samples = 6
     sc.render.resolution_x = sc.render.resolution_y = size
     w = bpy.data.worlds.new("w")
     w.use_nodes = True
@@ -496,17 +580,17 @@ def preview_sheet(rig, frames, out_png, gif=None, hits=(), size=300):
     for o in bpy.data.objects:
         if o.type == "MESH" and ("Female" in o.name or "Skeleton" in o.name or "Dress" in o.name or o.name.startswith("WGT")):
             o.hide_render = True
-    # poste objetivo y piso (en el espacio del rig: hijo del armature para heredar escala)
-    bpy.ops.mesh.primitive_cylinder_add(radius=3, depth=80, location=(0, -45, 40))
+    target = target or {"center": (0, -48), "radius": 8.0, "z": (0, 85)}
+    h = target["z"][1] - target["z"][0]
+    bpy.ops.mesh.primitive_cylinder_add(radius=target["radius"], depth=h)
     post = bpy.context.object
     post.parent = rig
     post.matrix_parent_inverse = Matrix.Identity(4)
-    post.location = (0, -45, 40)
+    post.location = (*target["center"], target["z"][0] + h / 2)
     mt = bpy.data.materials.new("rojo")
-    mt.diffuse_color = (0.8, 0.1, 0.1, 1)
-    if mt.node_tree is None:
-        mt.use_nodes = True
+    mt.use_nodes = True
     mt.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.8, 0.1, 0.1, 1)
+    mt.node_tree.nodes["Principled BSDF"].inputs["Alpha"].default_value = 0.45
     post.data.materials.append(mt)
     sun = bpy.data.objects.new("sol", bpy.data.lights.new("sol", "SUN"))
     sun.data.energy = 3
@@ -517,35 +601,157 @@ def preview_sheet(rig, frames, out_png, gif=None, hits=(), size=300):
     co = bpy.data.objects.new("cam", cam)
     sc.collection.objects.link(co)
     sc.camera = co
-    target = rig.matrix_world @ Vector((0, -15, 55))
-    views = ((math.radians(30), math.radians(-120), 1.35), (math.radians(88), math.radians(-90), 1.5))
+    tgt = rig.matrix_world @ Vector((0, -25, 50))
+    views = (("frente (sin objetivo)", math.radians(8), math.radians(-90), 1.6),
+             ("costado", math.radians(8), math.radians(180), 1.6),
+             ("arriba", math.radians(89), math.radians(-90), 1.6))
     tmp = Path(out_png).parent / "_frames"
     tmp.mkdir(parents=True, exist_ok=True)
     cols = []
     for f in frames:
-        sc.frame_set(f)
-        pair = []
-        for i, (el, az, scale) in enumerate(views):
+        k = 1 + (f - 1) * sub
+        sc.frame_set(int(k), subframe=k - int(k))
+        im = Image.new("RGB", (size, size * len(views)))
+        for i, (name, el, az, scale) in enumerate(views):
+            post.hide_render = name.startswith("frente")   # desde adelante el objetivo tapa al personaje
             cam.ortho_scale = scale
-            co.location = target + Vector((math.cos(el) * math.cos(az), math.cos(el) * math.sin(az), math.sin(el))) * 10
-            co.rotation_euler = (target - co.location).to_track_quat("-Z", "Y").to_euler()
-            sc.render.filepath = str(tmp / f"f{f:03d}_{i}.png")
+            co.location = tgt + Vector((math.cos(el) * math.cos(az), math.cos(el) * math.sin(az), math.sin(el))) * 10
+            co.rotation_euler = (tgt - co.location).to_track_quat("-Z", "Y").to_euler()
+            sc.render.filepath = str(tmp / f"f{k:03d}_{i}.png")
             bpy.ops.render.render(write_still=True)
-            pair.append(Image.open(sc.render.filepath).convert("RGB"))
-        im = Image.new("RGB", (size, size * 2))
-        im.paste(pair[0], (0, 0))
-        im.paste(pair[1], (0, size))
+            im.paste(Image.open(sc.render.filepath).convert("RGB"), (0, size * i))
+            ImageDraw.Draw(im).text((4, size * i + size - 14), name, fill=(230, 230, 230))
         d = ImageDraw.Draw(im)
-        d.text((4, 4), str(f), fill=(255, 255, 0))
-        if any(abs(f - h) <= 1 for h in hits):
-            d.rectangle((0, 0, size - 1, size * 2 - 1), outline=(255, 40, 40), width=3)
+        d.text((4, 4), f"frame {f}", fill=(255, 255, 0))
+        if any(abs(f - hh) < 0.5 for hh in hits):
+            d.rectangle((0, 0, size - 1, size * len(views) - 1), outline=(255, 40, 40), width=3)
         cols.append(im)
     per = 8
     rows = (len(cols) + per - 1) // per
-    sheet = Image.new("RGB", (min(len(cols), per) * size, rows * size * 2), (20, 20, 20))
+    sheet = Image.new("RGB", (min(len(cols), per) * size, rows * size * len(views)), (20, 20, 20))
     for i, im in enumerate(cols):
-        sheet.paste(im, ((i % per) * size, (i // per) * size * 2))
+        sheet.paste(im, ((i % per) * size, (i // per) * size * len(views)))
     sheet.save(out_png)
     if gif:
         cols[0].save(gif, save_all=True, append_images=cols[1:], duration=int(1000 / al.FPS * (frames[1] - frames[0])), loop=0)
     print(f"[animkit] preview {out_png}")
+
+# ------------------------------------------------- arma a partir del clip base
+def weapon_local_verts(weapon_id):
+    """Vértices del modelo del mod en ejes del hueso de prop de Blender (como attach_weapon)."""
+    fbx = al.ROOT / "Contents/mods/ArsenalChatarra/42/media/models_X/weapons/ArsenalChatarra" / f"{weapon_id}.fbx"
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.fbx(filepath=str(fbx))
+    new = [o for o in bpy.data.objects if o not in before]
+    obj = [o for o in new if o.type == "MESH"][0]
+    m = al.MESH_TO_RIG @ Matrix.Scale(100, 4)
+    verts = [m @ v.co for v in obj.data.vertices]
+    for o in new:
+        bpy.data.objects.remove(o, do_unlink=True)
+    return verts
+
+
+def target_distance(prop_m, verts, target, strike):
+    """Distancia (u) del ARMA ENTERA a la superficie del cilindro objetivo (negativa = adentro) y si
+    el punto más cercano es de la parte que golpea (STRIKE). Con todo el arma: una pala que ya cruzó
+    el objetivo también "toca" la superficie, pero la de atrás, con el mango adentro."""
+    c, r = Vector(target["center"]), target["radius"]
+    best = (1e9, None, False)
+    for v in verts:
+        p = prop_m @ v
+        if not (target["z"][0] <= p.z <= target["z"][1]):
+            continue
+        d = (p.xy - c).length - r
+        if d < best[0]:
+            is_strike = (strike[0] is None or v.z >= strike[0]) and (strike[1] is None or v.z <= strike[1])
+            best = (d, p, is_strike)
+    return best
+
+
+def base_weapon_path(spec, body, ease):
+    """Trayectoria del arma = la del prop en el clip base (re-temporizado), inclinada con TILT
+    (grados alrededor de TILT_AXIS, pivote TILT_PIVOT), desplazada con GRIP_OFFSET y con un ajuste
+    suave alrededor de cada impacto para que la parte que golpea (STRIKE) toque el objetivo."""
+    tilt = Track(getattr(spec, "TILT", {1: 0.0, spec.FRAMES: 0.0}), ease, hold=True)
+    axis = Vector(getattr(spec, "TILT_AXIS", (0, 1, 0))).normalized()
+    pivot = Vector(getattr(spec, "TILT_PIVOT", (0, -3, 74)))
+    off = Track({f: Vector(v) for f, v in getattr(spec, "GRIP_OFFSET", {1: (0, 0, 0), spec.FRAMES: (0, 0, 0)}).items()}, ease, hold=True)
+    gb = getattr(spec, "GUARD_BLEND", 3)
+    G = body.guard
+
+    pitch = Track(getattr(spec, "PITCH", {1: 0.0, spec.FRAMES: 0.0}), ease, hold=True)
+
+    def raw(f):
+        m = al.x_pose(body.base, body.warp(f))["Bip01_Prop1"]
+        w = max(raised_cos(f - 1, gb), raised_cos(f - spec.FRAMES, gb))
+        if w > 0:
+            m = _blend(m, G, w)
+        m = _about(pivot, Matrix.Rotation(math.radians(tilt(f)), 3, axis)) @ m
+        # PITCH: cabecear el arma alrededor del agarre (+ = la punta baja, el extremo de atrás sube)
+        along = (m.to_3x3() @ AXIS_ALONG).normalized()
+        side = Vector((0, 0, 1)).cross(along)
+        if side.length > 1e-3 and pitch(f):
+            m = _about(m.translation, Matrix.Rotation(math.radians(pitch(f)), 3, side.normalized())) @ m
+        return Matrix.Translation(off(f)) @ m
+
+    target = getattr(spec, "TARGET", None)
+    bumps = []
+    if target:
+        verts = weapon_local_verts(spec.WEAPON)
+        strike = getattr(spec, "STRIKE", (None, None))
+        width = getattr(spec, "CONTACT_WIDTH", 4.0)
+        # 1) timing: el barrido de la base toca al objetivo de costado; el impacto se ubica en el
+        #    instante de máximo acercamiento (así antes del impacto no hay penetración)
+        if hasattr(spec, "WARP_KEYS"):
+            keys = list(spec.WARP_KEYS)
+            for i, (fn, fb) in enumerate(keys):
+                if fb is None:
+                    lo, hi = getattr(spec, "WARP_SEARCH", (max(b for a, b in keys[:i] if b is not None),
+                                                           min(b for a, b in keys[i + 1:] if b is not None)))
+                    def dist(b):
+                        m = _about(pivot, Matrix.Rotation(math.radians(tilt(fn)), 3, axis)) \
+                            @ al.x_pose(body.base, b)["Bip01_Prop1"]
+                        return target_distance(m, verts, target, strike)[0]
+                    ts = [lo + (hi - lo) * k / 80 for k in range(81)]
+                    ds = [dist(b) for b in ts]
+                    first = next((b for b, d in zip(ts, ds) if d <= 0), None)   # primer toque
+                    best = (0, first) if first is not None else min(zip(ds, ts))
+                    keys[i] = (fn, best[1])
+            body.warp = timewarp(keys)
+            print(f"[animkit] {spec.NAME}: timewarp {[(a, round(b, 2)) for a, b in keys]}")
+        for _ in range(4):      # iterar: cada ajuste cambia un poco a los demás
+            def cur(f):
+                return Matrix.Translation(sum((d * raised_cos(f - h, width) for h, d in bumps), Vector())) @ raw(f)
+            new = []
+            for h in spec.HITS:
+                d, p, _ = target_distance(cur(h), verts, target, strike)
+                u = Vector((target["center"][0] - p.x, target["center"][1] - p.y, 0)).normalized()
+                new.append((h, u * d))
+            bumps = [(h, sum((d for hh, d in bumps if hh == h), Vector()) + nd) for h, nd in new]
+            if all(abs(target_distance(cur(h), verts, target, strike)[0]) < 0.1 for h in spec.HITS):
+                break
+
+    def path(f):
+        return Matrix.Translation(sum((d * raised_cos(f - h, getattr(spec, "CONTACT_WIDTH", 4.0)) for h, d in bumps),
+                                      Vector())) @ raw(f)
+    return path
+
+
+# ------------------------------------------------------------------ AnimSet
+def write_animset(spec, xml_path):
+    """Deja en el AnimSet un AttackCollisionCheck por impacto, con m_TimePc calculado del frame."""
+    import re
+    import uuid
+    s = Path(xml_path).read_text()
+    param = re.search(r"<m_EventName>AttackCollisionCheck</m_EventName>.*?<m_ParameterValue>(\w+)<", s, re.S).group(1)
+    s = re.sub(r"\s*<m_Events x_name=\"[^\"]+\">\s*<m_EventName>AttackCollisionCheck</m_EventName>.*?</m_Events>", "", s, flags=re.S)
+    events = "".join(
+        f"\n\t<m_Events x_name=\"{uuid.uuid5(uuid.NAMESPACE_URL, f'{spec.NAME}-hit-{h}')}\">\n"
+        f"\t\t<m_EventName>AttackCollisionCheck</m_EventName>\n"
+        f"\t\t<m_TimePc>{(h - 1) / (spec.FRAMES - 1):.4f}</m_TimePc>\n"
+        f"\t\t<m_ParameterValue>{param}</m_ParameterValue>\n\t</m_Events>"
+        for h in spec.HITS)
+    i = s.index("<m_Events")
+    i = s.rfind("\n", 0, i)
+    s = s[:i] + events + s[i:]
+    Path(xml_path).write_text(s)

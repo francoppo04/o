@@ -1,0 +1,13 @@
+Validación de Bob_AC_RemoTajo — GLB releído como el juego (/home/user/o/art/anims/Bob_AC_RemoTajo.glb)
+31 frames, 8 muestras por frame (241 muestras); AnimSet: AC_RemoTajo.xml; impactos (m_TimePc [0.3]) en los frames [10.0]
+objetivo: cilindro centro (0, -72) radio 8.0 u; antes del impacto, distancia mínima +3.2 u (frame 9.875)
+
+PASA   contacto
+PASA   cuerpo
+PASA   agarre
+PASA   rotacion
+PASA   pies
+PASA   articulaciones
+PASA   timing
+
+RESULTADO: PASA

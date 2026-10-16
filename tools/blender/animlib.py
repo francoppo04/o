@@ -232,11 +232,12 @@ def load_x(path):
 
 
 # --------------------------------------------------------------- exportar
-def export_glb(rig, action, path):
-    """Igual que el exportador del Community Rig (PZ_HumanRig_Export): GLB a 30 fps con
-    Dummy01 / Bip01 / Translation_Data y los huesos de deformación horneados."""
+def export_glb(rig, action, path, fps=FPS):
+    """Igual que el exportador del Community Rig (PZ_HumanRig_Export): GLB con Dummy01 / Bip01 /
+    Translation_Data y los huesos de deformación horneados. fps = keys por segundo de la acción
+    (el juego toma los tiempos en segundos: 60 keys/s no cambia la duración)."""
     sc = bpy.context.scene
-    sc.render.fps = FPS
+    sc.render.fps = fps
     dummy = rig.parent
     td = bpy.data.objects["OBJ-TranslationData (0)"]
     mesh = bpy.data.objects["OBJ-MaleBody (0)"]
@@ -270,6 +271,37 @@ def export_glb(rig, action, path):
     for o, n in names.items():
         o.name = n
     print(f"[animlib] {path}")
+
+
+def fix_glb_hemispheres(path):
+    """El exportador glTF vuelve a muestrear la pose y puede invertir el signo de algún cuaternión
+    entre keys. q y -q son la misma rotación, pero interpolar entre ellos da la vuelta larga:
+    se reescribe cada key de rotación en el hemisferio de la anterior."""
+    import json
+    import struct
+    d = bytearray(Path(path).read_bytes())
+    n = struct.unpack_from("<I", d, 12)[0]
+    j = json.loads(bytes(d[20:20 + n]))
+    base = 20 + n + 8
+    fixed = 0
+    for an in j.get("animations", []):
+        for c in an["channels"]:
+            if c["target"]["path"] != "rotation":
+                continue
+            a = j["accessors"][an["samplers"][c["sampler"]]["output"]]
+            v = j["bufferViews"][a["bufferView"]]
+            off = base + v.get("byteOffset", 0) + a.get("byteOffset", 0)
+            stride = v.get("byteStride", 16)
+            prev = None
+            for i in range(a["count"]):
+                q = list(struct.unpack_from("<4f", d, off + stride * i))
+                if prev is not None and sum(x * y for x, y in zip(q, prev)) < 0:
+                    q = [-x for x in q]
+                    struct.pack_into("<4f", d, off + stride * i, *q)
+                    fixed += 1
+                prev = q
+    Path(path).write_bytes(bytes(d))
+    return fixed
 
 
 # ------------------------------------------------------------- vista previa
