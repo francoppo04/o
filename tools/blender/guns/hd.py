@@ -188,7 +188,7 @@ class Gun:
             if best[0] > 2e-7:
                 self.extra[best[1]] = unary_union([self.extra.get(best[1], p), p])
                 grown += p.area
-            else:
+            elif p.buffer(-0.002).area > 0 and p.area > 3e-5:     # suelto: solo si es macizo (≥4 mm de espesor)
                 self.orphans.append(p)
         lost = sum(p.area for p in self.orphans)
         if pieces:
