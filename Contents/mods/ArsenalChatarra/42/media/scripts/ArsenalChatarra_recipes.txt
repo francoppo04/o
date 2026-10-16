@@ -1,6 +1,6 @@
 /*
     Arsenal de Chatarra - recetas de fabricacion (combos).
-    La Desafinada no tiene receta: solo aparece como loot (tiendas de musica, salas de ensayo).
+    La Desafinada y la Guadana de Golf no tienen receta: solo aparecen como loot.
     Los nombres visibles salen de Translate/<idioma>/Recipes.json (clave = nombre exacto de la receta).
 */
 module ArsenalChatarra
@@ -80,6 +80,175 @@ module ArsenalChatarra
         outputs
         {
             item 1 ArsenalChatarra.AC_PareDefinitivo,
+        }
+    }
+
+    craftRecipe AC_MakeGarrasCarnicero
+    {
+        timedAction   = Making,
+        Time          = 250,
+        category      = Blacksmithing,
+        SkillRequired = Blacksmith:2,
+        xpAward       = Blacksmith:25,
+        Tags          = InHandCraft,
+        needToBeLearn = false,
+
+        inputs
+        {
+            item 3 [Base.ScrapMetal],
+            item 2 [Base.RippedSheets],
+            item 1 tags[base:hammer] mode:keep,
+        }
+
+        outputs
+        {
+            item 1 ArsenalChatarra.AC_GarrasCarnicero,
+        }
+    }
+
+    craftRecipe AC_MakeRemoDestripador
+    {
+        timedAction   = Making,
+        Time          = 400,
+        category      = Blacksmithing,
+        SkillRequired = Blacksmith:3,
+        xpAward       = Blacksmith:35,
+        Tags          = InHandCraft,
+        needToBeLearn = false,
+
+        inputs
+        {
+            item 1 [Base.Pipe],
+            item 4 [Base.ScrapMetal],
+            item 6 [Base.Nails],
+            item 1 tags[base:hammer] mode:keep,
+            item 1 tags[base:saw] mode:keep,
+        }
+
+        outputs
+        {
+            item 1 ArsenalChatarra.AC_RemoDestripador,
+        }
+    }
+
+    craftRecipe AC_MakeTridenteCarnicero
+    {
+        timedAction   = Making,
+        Time          = 350,
+        category      = Carpentry,
+        SkillRequired = Woodwork:2,
+        xpAward       = Woodwork:25,
+        Tags          = InHandCraft,
+        needToBeLearn = false,
+
+        inputs
+        {
+            item 2 [Base.Plank],
+            item 4 [Base.ScrapMetal],
+            item 4 [Base.Nails],
+            item 1 tags[base:hammer] mode:keep,
+            item 1 tags[base:saw] mode:keep,
+        }
+
+        outputs
+        {
+            item 1 ArsenalChatarra.AC_TridenteCarnicero,
+        }
+    }
+
+    craftRecipe AC_MakePalaTiburon
+    {
+        timedAction   = Making,
+        Time          = 300,
+        category      = Blacksmithing,
+        SkillRequired = Blacksmith:2,
+        xpAward       = Blacksmith:25,
+        Tags          = InHandCraft,
+        needToBeLearn = false,
+
+        inputs
+        {
+            item 1 [Base.Plank],
+            item 3 [Base.ScrapMetal],
+            item 4 [Base.Nails],
+            item 1 tags[base:hammer] mode:keep,
+        }
+
+        outputs
+        {
+            item 1 ArsenalChatarra.AC_PalaTiburon,
+        }
+    }
+
+    craftRecipe AC_MakeSartenInfierno
+    {
+        timedAction   = Making,
+        Time          = 250,
+        category      = Blacksmithing,
+        SkillRequired = Blacksmith:2,
+        xpAward       = Blacksmith:20,
+        Tags          = InHandCraft,
+        needToBeLearn = false,
+
+        inputs
+        {
+            item 2 [Base.ScrapMetal],
+            item 8 [Base.Nails],
+            item 1 [Base.SmallHandle],
+            item 1 tags[base:hammer] mode:keep,
+        }
+
+        outputs
+        {
+            item 1 ArsenalChatarra.AC_SartenInfierno,
+        }
+    }
+
+    craftRecipe AC_MakeKatanaBallesta
+    {
+        timedAction   = Making,
+        Time          = 600,
+        category      = Blacksmithing,
+        SkillRequired = Blacksmith:5,
+        xpAward       = Blacksmith:60,
+        Tags          = InHandCraft,
+        needToBeLearn = false,
+
+        inputs
+        {
+            item 4 [Base.ScrapMetal],
+            item 2 [Base.RippedSheets],
+            item 1 [Base.SmallHandle],
+            item 1 tags[base:hammer] mode:keep,
+        }
+
+        outputs
+        {
+            item 1 ArsenalChatarra.AC_KatanaBallesta,
+        }
+    }
+
+    craftRecipe AC_MakeLanzaTijera
+    {
+        timedAction   = Making,
+        Time          = 250,
+        category      = Carpentry,
+        SkillRequired = Woodwork:1,
+        xpAward       = Woodwork:20,
+        Tags          = InHandCraft,
+        needToBeLearn = false,
+
+        inputs
+        {
+            item 1 [Base.Plank],
+            item 2 [Base.ScrapMetal],
+            item 2 [Base.RippedSheets],
+            item 1 tags[base:saw] mode:keep,
+        }
+
+        outputs
+        {
+            item 1 ArsenalChatarra.AC_LanzaTijera,
         }
     }
 }

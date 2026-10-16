@@ -14,7 +14,8 @@ import re
 import sys
 from pathlib import Path
 
-WEAPONS = ["BaseballBat", "SledgeHammer", "Sledgehammer", "Axe", "WoodAxe", "Shovel"]
+WEAPONS = ["BaseballBat", "SledgeHammer", "Sledgehammer", "Axe", "WoodAxe", "Shovel",
+           "SpearCrafted", "SpearKnife", "Pan", "Katana", "Golfclub", "HuntingKnife"]
 
 
 def args():

@@ -1,5 +1,12 @@
 {
     "AC_MakeHachamazo": "Fabricar Hachamazo",
     "AC_MakeBateErizo": "Fabricar Bate Erizo",
-    "AC_MakePareDefinitivo": "Fabricar PARE Definitivo"
+    "AC_MakePareDefinitivo": "Fabricar PARE Definitivo",
+    "AC_MakeGarrasCarnicero": "Fabricar Garras de Carnicero",
+    "AC_MakeRemoDestripador": "Fabricar Remo Destripador",
+    "AC_MakeTridenteCarnicero": "Fabricar Tridente Carnicero",
+    "AC_MakePalaTiburon": "Fabricar Pala Tiburón",
+    "AC_MakeSartenInfierno": "Fabricar Sartén del Infierno",
+    "AC_MakeKatanaBallesta": "Fabricar Katana de Ballesta",
+    "AC_MakeLanzaTijera": "Fabricar Lanza Tijera"
 }

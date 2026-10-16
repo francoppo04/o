@@ -33,6 +33,14 @@ TARGET_LENGTH = {
     "AC_Hachamazo": 0.69,       # mazo vanilla
     "AC_PareDefinitivo": 0.85,  # más largo que el mazo: poste + contrapeso
     "AC_LaDesafinada": 0.70,
+    "AC_GarrasCarnicero": 0.38,   # una mano, tipo cuchillo
+    "AC_RemoDestripador": 1.10,
+    "AC_TridenteCarnicero": 1.20, # lanza: agarre a ~30% del largo
+    "AC_PalaTiburon": 0.75,       # pala vanilla 0.65
+    "AC_SartenInfierno": 0.45,    # una mano
+    "AC_KatanaBallesta": 0.80,
+    "AC_LanzaTijera": 1.15,       # lanza
+    "AC_GuadanaGolf": 0.75,
 }
 
 

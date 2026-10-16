@@ -79,4 +79,148 @@ module Base
             rotate = 0.0000 0.0000 0.0000,
         }
     }
+
+    model AC_GarrasCarnicero
+    {
+        mesh    = weapons/ArsenalChatarra/AC_GarrasCarnicero,
+        texture = weapons/ArsenalChatarra/AC_GarrasCarnicero,
+
+        attachment world
+        {
+            offset = 0.0000 0.1340 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+
+        attachment Bip01_Prop2
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AC_RemoDestripador
+    {
+        mesh    = weapons/ArsenalChatarra/AC_RemoDestripador,
+        texture = weapons/ArsenalChatarra/AC_RemoDestripador,
+
+        attachment world
+        {
+            offset = 0.0000 0.3650 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+
+        attachment Bip01_Prop2
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AC_TridenteCarnicero
+    {
+        mesh    = weapons/ArsenalChatarra/AC_TridenteCarnicero,
+        texture = weapons/ArsenalChatarra/AC_TridenteCarnicero,
+
+        attachment world
+        {
+            offset = 0.0000 0.4945 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+
+        attachment Bip01_Prop2
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AC_PalaTiburon
+    {
+        mesh    = weapons/ArsenalChatarra/AC_PalaTiburon,
+        texture = weapons/ArsenalChatarra/AC_PalaTiburon,
+
+        attachment world
+        {
+            offset = 0.0000 0.3515 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+
+        attachment Bip01_Prop2
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AC_SartenInfierno
+    {
+        mesh    = weapons/ArsenalChatarra/AC_SartenInfierno,
+        texture = weapons/ArsenalChatarra/AC_SartenInfierno,
+
+        attachment world
+        {
+            offset = 0.0000 0.2085 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+
+        attachment Bip01_Prop2
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AC_KatanaBallesta
+    {
+        mesh    = weapons/ArsenalChatarra/AC_KatanaBallesta,
+        texture = weapons/ArsenalChatarra/AC_KatanaBallesta,
+
+        attachment world
+        {
+            offset = 0.0000 0.3745 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+
+        attachment Bip01_Prop2
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AC_LanzaTijera
+    {
+        mesh    = weapons/ArsenalChatarra/AC_LanzaTijera,
+        texture = weapons/ArsenalChatarra/AC_LanzaTijera,
+
+        attachment world
+        {
+            offset = 0.0000 0.4560 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+
+        attachment Bip01_Prop2
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AC_GuadanaGolf
+    {
+        mesh    = weapons/ArsenalChatarra/AC_GuadanaGolf,
+        texture = weapons/ArsenalChatarra/AC_GuadanaGolf,
+
+        attachment world
+        {
+            offset = 0.0000 0.3660 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+
+        attachment Bip01_Prop2
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
 }
