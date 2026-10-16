@@ -349,15 +349,23 @@ def _from_concept():
 _from_concept()
 
 
+FIX_ERRORS = {}       # ID -> error al cargar su ficha de hd_fix (hd.Gun(ID) se niega a seguir con la ficha vieja)
+
+
 def _load_fixes():
-    """Fichas corregidas a mano (hd_fix/<ID>.py, creadas con hd_dump.py): reemplazan la ficha entera."""
+    """Fichas corregidas a mano (hd_fix/<ID>.py, creadas con hd_dump.py): reemplazan la ficha entera.
+    Un error en una ficha solo frena a esa arma, no a las demás."""
     import importlib.util
+    import traceback
     from pathlib import Path
     for f in sorted((Path(__file__).resolve().parent / "hd_fix").glob("AT_*.py")):
-        spec = importlib.util.spec_from_file_location(f"hd_fix_{f.stem}", f)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        SPEC[f.stem] = mod.SPEC
+        try:
+            spec = importlib.util.spec_from_file_location(f"hd_fix_{f.stem}", f)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            SPEC[f.stem] = mod.SPEC
+        except Exception:
+            FIX_ERRORS[f.stem] = traceback.format_exc()
 
 
 _load_fixes()

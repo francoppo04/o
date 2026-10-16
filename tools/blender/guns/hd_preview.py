@@ -34,6 +34,11 @@ def main():
                               photo=str(ref_dir / g.sp["img"]), out=str(out / "prev_silueta.png"))
     from mathutils import Vector
     from PIL import Image, ImageDraw
+    if r:                                   # ampliada para poder ver los bordes
+        ov = Image.open(out / "prev_silueta.png")
+        k = max(1, round(1400 / ov.width))
+        if k > 1:
+            ov.resize((ov.width * k, ov.height * k), Image.NEAREST).save(out / "prev_silueta.png")
     vs = [o.matrix_world @ v.co for o in P for v in o.data.vertices]
     lo = Vector([min(v[i] for v in vs) for i in range(3)])
     hi = Vector([max(v[i] for v in vs) for i in range(3)])

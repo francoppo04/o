@@ -26,6 +26,8 @@ COLORS = hd_specs.COLORS
 
 class Gun:
     def __init__(self, ID):
+        if ID in hd_specs.FIX_ERRORS:
+            raise RuntimeError(f"la ficha hd_fix/{ID}.py no carga:\n{hd_specs.FIX_ERRORS[ID]}")
         self.ID = ID
         self.sp = hd_specs.SPEC[ID]
         sp = self.sp
