@@ -1,10 +1,10 @@
 /*
     Arsenal de Chatarra - modelos 3D.
-    Se definen en module Base (con prefijo AC_) para que WeaponSprite / WorldStaticModel
-    los encuentren por nombre corto, como los modelos vanilla.
-    mesh    -> media/models_X/<ruta>.fbx  (sin extension)
-    texture -> media/textures/<ruta>.png  (sin extension)
-    Para ajustar tamano o posicion: scale y attachment world (o el Attachment Editor en modo debug).
+    Misma estructura que los modelos vanilla (scripts/generated/models_weapons.txt, 42.21):
+    malla en metros con el largo sobre +Y y el agarre en el origen, sin scale;
+    attachment world = posicion en el suelo (offset Y = mitad del largo, como el bate vanilla);
+    attachment Bip01_Prop2 = segunda mano, igual que BaseballBat y WoodAxe.
+    Se definen en module Base con prefijo AC_ para que WeaponSprite los encuentre por nombre corto.
 */
 module Base
 {
@@ -12,9 +12,14 @@ module Base
     {
         mesh    = weapons/ArsenalChatarra/AC_Hachamazo,
         texture = weapons/ArsenalChatarra/AC_Hachamazo,
-        scale   = 0.75,
 
         attachment world
+        {
+            offset = 0.0000 0.3150 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+
+        attachment Bip01_Prop2
         {
             offset = 0.0000 0.0000 0.0000,
             rotate = 0.0000 0.0000 0.0000,
@@ -25,9 +30,14 @@ module Base
     {
         mesh    = weapons/ArsenalChatarra/AC_BateErizo,
         texture = weapons/ArsenalChatarra/AC_BateErizo,
-        scale   = 0.75,
 
         attachment world
+        {
+            offset = 0.0000 0.2490 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+
+        attachment Bip01_Prop2
         {
             offset = 0.0000 0.0000 0.0000,
             rotate = 0.0000 0.0000 0.0000,
@@ -38,9 +48,14 @@ module Base
     {
         mesh    = weapons/ArsenalChatarra/AC_PareDefinitivo,
         texture = weapons/ArsenalChatarra/AC_PareDefinitivo,
-        scale   = 0.75,
 
         attachment world
+        {
+            offset = 0.0000 0.2745 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+
+        attachment Bip01_Prop2
         {
             offset = 0.0000 0.0000 0.0000,
             rotate = 0.0000 0.0000 0.0000,
@@ -51,9 +66,14 @@ module Base
     {
         mesh    = weapons/ArsenalChatarra/AC_LaDesafinada,
         texture = weapons/ArsenalChatarra/AC_LaDesafinada,
-        scale   = 0.75,
 
         attachment world
+        {
+            offset = 0.0000 0.2725 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+
+        attachment Bip01_Prop2
         {
             offset = 0.0000 0.0000 0.0000,
             rotate = 0.0000 0.0000 0.0000,
