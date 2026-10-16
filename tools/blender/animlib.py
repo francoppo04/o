@@ -193,16 +193,15 @@ class Animator:
 
 
 # ------------------------------------------------------- animaciones vanilla
-# Las .X del juego están en convención DirectX (mano izquierda): el juego carga los GLB del rig
-# negando Z (mundo y ejes de cada hueso), así que  rig = F · X · L  con
-#   F = intercambiar Y y Z (espejo: Y arriba -> Z arriba, el frente -Z -> -Y del rig),
-#   L = diag(1, 1, -1) en los ejes locales de cada hueso, y metros -> cm.
-# Comprobado: con esto el bate de Bob_AttackBat01_Hit golpea hacia adelante, el pie derecho queda a
-# -X y los offsets padre-hijo coinciden con el rig (< 0,7 cm en columna y brazos).
-# Las mallas del juego están en ejes X del prop: para verlas en Blender se espeja Z (MESH_TO_RIG).
+# Las .X del juego están en convención DirectX (Y arriba, mano izquierda). Pasaje al rig:
+#   rig = F · X · F   con F = intercambiar Y y Z (en el mundo y en los ejes de cada hueso) y m -> cm.
+# Medido contra la pose de enlace de la malla vanilla (SkinWeights de los .X): con F a ambos lados
+# los 28 huesos de la piel coinciden con el reposo del rig (< 1° y < 1,6 cm). Con esto el bate de
+# Bob_AttackBat01_Hit golpea hacia adelante y los pies miran al frente.
+# Las mallas del juego (armas) están en ejes X del prop: en Blender van con F (MESH_TO_RIG).
 X_TO_RIG = Matrix(((1, 0, 0, 0), (0, 0, 1, 0), (0, 1, 0, 0), (0, 0, 0, 1)))
-X_LOCAL = Matrix.Diagonal((1, 1, -1, 1))
-MESH_TO_RIG = X_LOCAL
+X_LOCAL = X_TO_RIG
+MESH_TO_RIG = X_TO_RIG
 
 
 def x_globals(anim, tick):

@@ -172,9 +172,19 @@ class Body:
         return self.pb[name].matrix.copy()
 
     def rotate(self, name, rot3, pivot=None):
-        """Gira un hueso (y con él sus hijos) en espacio armature alrededor de su cabeza."""
-        m = self.M(name)
-        self._set(name, _about(pivot if pivot is not None else m.translation, rot3) @ m)
+        """Gira un hueso y TODO lo que cuelga de él como un bloque rígido, en espacio armature,
+        alrededor de su cabeza. Ojo: en el rig las clavículas, los muslos y los props no heredan la
+        rotación del padre; si solo se girara el padre, quedarían mirando para otro lado."""
+        self.transform_subtree(name, _about(pivot if pivot is not None else self.M(name).translation, rot3))
+
+    def transform_subtree(self, name, T, skip=()):
+        bones = [name] + [c.name for c in self.pb[name].children_recursive]
+        bones = [b for b in bones if b.startswith("Bip01") and b not in skip]
+        bones.sort(key=lambda b: len(self.pb[b].parent_recursive))
+        target = {b: T @ self.M(b) for b in bones}
+        for b in bones:
+            self.pb[b].matrix = target[b]
+            bpy.context.view_layer.update()
 
     def two_bone(self, chain, target, pole, end_m=None):
         """IK analítica de dos huesos (brazo o pierna). end_m: matriz final del tercer hueso."""
@@ -233,16 +243,18 @@ class Body:
         pel = self.M("Bip01_Pelvis")
         # cadera: desplazar + girar (arrastra todo el cuerpo; los pies se vuelven a poner con IK)
         root = "Bip01"
-        m = self.M(root)
-        m = Matrix.Translation(Vector(shift) + Vector((0, 0, -crouch))) @ _about(pel.translation, _rot("Z", hips_yaw)) @ m
-        self._set(root, m)
+        self.transform_subtree(root, Matrix.Translation(Vector(shift) + Vector((0, 0, -crouch)))
+                               @ _about(pel.translation, _rot("Z", hips_yaw)), skip=("Bip01_Prop1", "Bip01_Prop2"))
         # columna: torsión, inclinación y lateral repartidas
         for bone, w in zip(SPINE, SPINE_W):
             cur = self.M(bone)
             fwd = Vector((0, -1, 0))
             r = _rot("Z", twist * w) @ Matrix.Rotation(math.radians(-lean * w), 3, Vector((1, 0, 0))) \
                 @ Matrix.Rotation(math.radians(side * w), 3, fwd)
-            self.rotate(bone, r)
+            self.rotate(bone, r) if bone != "Bip01_Spine" else self.transform_subtree(
+                bone, _about(cur.translation, r), skip=("Bip01_L_Thigh", "Bip01_R_Thigh", "Bip01_L_Calf",
+                                                        "Bip01_R_Calf", "Bip01_L_Foot", "Bip01_R_Foot",
+                                                        "Bip01_L_Toe0", "Bip01_R_Toe0"))
         # cabeza: devuelve parte del giro para mirar al frente
         h = self.M("Bip01_Head")
         d = head0.to_quaternion() @ h.to_quaternion().inverted()
@@ -278,7 +290,7 @@ class Body:
         self._set("Bip01_Prop1", prop_m)
         self.arm("R", prop_m @ self.grip_r, elbow_r)
         if left is not None:
-            ml = prop_m @ Matrix.Translation((0, left, 0)) @ self.grip_l
+            ml = prop_m @ Matrix.Translation(AXIS_ALONG * left) @ self.grip_l
             self.arm("L", ml, elbow_l)
         elif left_m is not None:
             self.arm("L", left_m, elbow_l)
@@ -321,11 +333,20 @@ class Body:
 
 # --------------------------------------------------------------- armas
 def prop_matrix(grip, along, face):
-    """Hueso de prop: origen en el agarre, Y a lo largo del mango (hacia la cabeza del arma),
-    Z hacia donde mira el filo/cara de la cabeza."""
-    m = _aim(face, along).to_4x4()
+    """Hueso de prop en Blender: origen en el agarre. El modelo del juego tiene el mango sobre +Y y
+    la cabeza/filo sobre +Z de SUS ejes, que en el hueso de Blender son +Z y +Y (animlib.MESH_TO_RIG):
+    acá +Z del hueso = a lo largo del mango, +Y del hueso = hacia el filo/cara."""
+    z = Vector(along).normalized()
+    y = Vector(face)
+    y = (y - z * y.dot(z)).normalized()
+    x = y.cross(z)
+    m = Matrix((x, y, z)).transposed().to_4x4()
     m.translation = Vector(grip)
     return m
+
+
+AXIS_ALONG = Vector((0, 0, 1))   # mango, en ejes del hueso de prop de Blender
+AXIS_FACE = Vector((0, 1, 0))    # filo/cara
 
 
 class WeaponPath:
@@ -377,8 +398,8 @@ def build(spec, preview=False):
     body = Body(rig, spec.NAME, spec.BASE, getattr(spec, "WARP", None), spec.GRIP)
     ease = getattr(spec, "EASE", {})
     guard_grip = body.guard.translation.copy()
-    guard_tip = body.guard @ Vector((0, 45, 0))
-    guard_face = body.guard.to_3x3().col[2].normalized()
+    guard_tip = body.guard @ (AXIS_ALONG * 45)
+    guard_face = (body.guard.to_3x3() @ AXIS_FACE).normalized()
 
     def tracks(keys, fields, default=0.0):
         out = {}
@@ -452,17 +473,18 @@ def build(spec, preview=False):
             al.attach_weapon(rig, spec.WEAPON + "L", bone="Bip01_Prop2", tex_id=spec.WEAPON)
         else:
             al.attach_weapon(rig, spec.WEAPON)
-        preview_sheet(rig, list(range(1, spec.FRAMES + 1, 2)), out / f"{spec.NAME}_sheet.png",
+        frames = sorted(set(list(range(1, spec.FRAMES + 1, 3)) + list(getattr(spec, "HITS", ())) + [spec.FRAMES]))
+        preview_sheet(rig, frames, out / f"{spec.NAME}_sheet.png",
                       gif=out / f"{spec.NAME}.gif", hits=getattr(spec, "HITS", ()))
     return rig, action
 
 
-def preview_sheet(rig, frames, out_png, gif=None, hits=(), size=260):
+def preview_sheet(rig, frames, out_png, gif=None, hits=(), size=300):
     """Dos vistas por frame: 3/4 desde adelante-derecha (como suele verse en el juego) y cenital.
     Un poste rojo marca dónde estaría el zombi (45 cm adelante). Los frames de golpe van con borde."""
     from PIL import Image, ImageDraw
     sc = bpy.context.scene
-    sc.render.engine = "BLENDER_EEVEE" if "BLENDER_EEVEE" in [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items] else "CYCLES"
+    sc.render.engine = "CYCLES"   # EEVEE necesita EGL, no disponible sin pantalla
     if sc.render.engine == "CYCLES":
         sc.cycles.samples = 6
     sc.render.resolution_x = sc.render.resolution_y = size
@@ -496,7 +518,7 @@ def preview_sheet(rig, frames, out_png, gif=None, hits=(), size=260):
     sc.collection.objects.link(co)
     sc.camera = co
     target = rig.matrix_world @ Vector((0, -15, 55))
-    views = ((math.radians(32), math.radians(-60), 2.2), (math.radians(88), math.radians(-90), 2.4))
+    views = ((math.radians(30), math.radians(-120), 1.35), (math.radians(88), math.radians(-90), 1.5))
     tmp = Path(out_png).parent / "_frames"
     tmp.mkdir(parents=True, exist_ok=True)
     cols = []
@@ -518,7 +540,7 @@ def preview_sheet(rig, frames, out_png, gif=None, hits=(), size=260):
         if any(abs(f - h) <= 1 for h in hits):
             d.rectangle((0, 0, size - 1, size * 2 - 1), outline=(255, 40, 40), width=3)
         cols.append(im)
-    per = 9
+    per = 8
     rows = (len(cols) + per - 1) // per
     sheet = Image.new("RGB", (min(len(cols), per) * size, rows * size * 2), (20, 20, 20))
     for i, im in enumerate(cols):

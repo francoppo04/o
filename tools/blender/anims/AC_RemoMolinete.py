@@ -32,12 +32,12 @@ WEAPON_KEYS = {
     11: ((0, -27, 66), _tip((0, -27, 66), (0.45, -0.72, -0.52)), None),    # GOLPE 1: pala delantera abajo-izq.
     15: ((10, -19, 60), _tip((10, -19, 60), (0.82, -0.2, -0.53)), None),   # sigue de largo
     19: ((4, -14, 84), _tip((4, -14, 84), (-0.42, -0.3, -0.85)), None),    # vuelta: la pala trasera sube por la izq.
-    24: ((-4, -27, 66), _tip((-4, -27, 66), (0.42, 0.72, 0.55)), "back"),  # GOLPE 2: pala trasera abajo-der.
+    24: ((-6, -26, 68), _tip((-6, -26, 68), (0.6, 0.55, 0.58)), "back"),   # GOLPE 2: pala trasera abajo-der.
     28: ((-13, -18, 60), _tip((-13, -18, 60), (0.8, 0.22, 0.56)), "back"),
     36: "guard",
 }
 EASE = {1: "io", 6: "in", 11: "out", 15: "io", 19: "in", 24: "out", 28: "io"}
-LEFT = {1: 0.0, 6: 4.0, 11: 24.0, 15: 24.0, 19: 10.0, 24: 24.0, 28: 24.0, 33: 4.0, 36: 0.0}   # cm de la mano izquierda sobre el mango
+LEFT = {1: 0.0, 6: 2.0, 11: -10.0, 15: -10.0, 19: 6.0, 24: 18.0, 28: 18.0, 33: 4.0, 36: 0.0}   # cm de la mano izquierda sobre el mango
 BODY = {
     1: {},
     6: {"twist": -20, "hips_yaw": -10, "lean": -4, "crouch": -1},
