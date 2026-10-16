@@ -204,7 +204,7 @@ SPEC["AT_Marlin336"] = dict(
          {"round": True, "bevel": 8}),
         ("s", "cajon", [(638, 600), (824, 600), (824, 682), (762, 682), (702, 693), (650, 694)], 28, "pavon",
          {"ct": 4}),
-        ("s", "martillo", [(584, 652), (588, 640), (604, 633), (614, 636), (608, 650), (596, 658)], 8, "pavon", {}),
+        ("s", "martillo", [(582, 664), (588, 640), (604, 633), (614, 636), (608, 652), (600, 662)], 8, "pavon", {}),
         # palanca: contorno del aro (con la parte que corre bajo el cajón) recortado con la silueta de la foto,
         # que da los dos huecos (aro y gatillo)
         ("s", "palanca", _MARLIN_PALANCA, 8, "pavon", {"sil": True, "bevel": 1.2, "segs": 2}),

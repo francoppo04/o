@@ -237,7 +237,8 @@ class Gun:
     def _side(self, reg, o):
         side = self.region(reg, o.get("cut", True))
         if o.get("sil") and self.sil is not None and not self.sp.get("sil_cut", True):   # recorte pieza a pieza
-            side = side.intersection(self.sil)
+            r = 2.0 * self.sp["mm_px"] / 1000                     # alisado de ~2 px: saca el serrucho del calcado
+            side = side.intersection(self.sil).buffer(-r).buffer(2 * r).buffer(-r)
         for h in o.get("holes", []):
             side = side.difference(self.ref.poly(h))
         return side
