@@ -49,7 +49,9 @@ TARGET_LENGTH = {
 # hacia el dorso de la mano y el pulgar del modelo (-Y) hacia el pulgar. Ejes medidos en la mano de
 # las animaciones vanilla de una mano (cuchillo/puño, tools/blender/animkit.py: Body.fist_axes), que
 # es como el juego pone Bip01_Prop1/Prop2 respecto de cada mano. Columnas = destino de X, Y, Z.
-# El modelo es un guante izquierdo: el derecho sale espejado (determinante -1).
+# El juego espeja Z de los vértices del FBX al cargarlo (MAKE_LEFT_HANDED): se exporta S · destino.
+# (Las demás armas no se tocan: el usuario las validó en el juego tal como están.)
+FBX_Z_MIRROR = Matrix.Diagonal((1, 1, -1, 1))
 AXIS = {
     "AC_GarrasCarnicero": Matrix(((-0.0435, 0.1217, -0.9916), (-0.258, -0.9603, -0.1066),
                                   (0.9652, -0.2512, -0.0731))).transposed().to_4x4(),
@@ -58,6 +60,9 @@ AXIS = {
 }
 # centro del puño (m, espacio del prop) donde va el centro del guante, y centro del guante en art/
 FIST_CENTER = {"AC_GarrasCarnicero": (-0.0337, 0.0328, 0.0273), "AC_GarrasCarniceroL": (-0.0302, 0.0124, 0.0424)}
+for _k in list(AXIS):
+    AXIS[_k] = FBX_Z_MIRROR @ AXIS[_k]
+    FIST_CENTER[_k] = (FIST_CENTER[_k][0], FIST_CENTER[_k][1], -FIST_CENTER[_k][2])
 MODEL_CENTER = {"AC_GarrasCarnicero": (0.03, 0.0, 0.01)}
 # variantes que reutilizan el modelo de otra arma
 SOURCE = {"AC_GarrasCarniceroL": "AC_GarrasCarnicero"}

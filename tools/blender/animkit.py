@@ -431,11 +431,11 @@ class Body:
 
 # --------------------------------------------------------------- armas
 def prop_matrix(grip, along, face):
-    """Hueso de prop en Blender: origen en el agarre. El modelo del juego tiene el mango sobre +Y y
-    la cabeza/filo sobre +Z de SUS ejes, que en el hueso de Blender son +Z y +Y (animlib.MESH_TO_RIG):
-    acá +Z del hueso = a lo largo del mango, +Y del hueso = hacia el filo/cara."""
+    """Hueso de prop en Blender: origen en el agarre. El FBX tiene el mango sobre +Y y la cabeza/filo
+    sobre +Z; en el hueso de Blender son +Z y -Y (animlib.MESH_TO_RIG, con el espejo de Z del juego):
+    acá +Z del hueso = a lo largo del mango, -Y del hueso = hacia el filo/cara."""
     z = Vector(along).normalized()
-    y = Vector(face)
+    y = -Vector(face)
     y = (y - z * y.dot(z)).normalized()
     x = y.cross(z)
     m = Matrix((x, y, z)).transposed().to_4x4()
@@ -444,7 +444,7 @@ def prop_matrix(grip, along, face):
 
 
 AXIS_ALONG = Vector((0, 0, 1))   # mango, en ejes del hueso de prop de Blender
-AXIS_FACE = Vector((0, 1, 0))    # filo/cara
+AXIS_FACE = Vector((0, -1, 0))   # filo/cara (+Z del FBX; el juego espeja Z al cargar)
 
 
 class WeaponPath:

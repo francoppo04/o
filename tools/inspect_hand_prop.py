@@ -12,7 +12,7 @@ import re
 import sys
 from pathlib import Path
 
-PATTERN = re.compile(r"knife|1hand|punch|stab|idle|walk|run|sprint|aim", re.I)
+PATTERN = re.compile(r"knife|1hand|punch|stab|bag|torch|umbrella|idle|walk|run|sprint|aim", re.I)
 
 
 def q_mul(a, b):

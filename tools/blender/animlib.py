@@ -198,10 +198,12 @@ class Animator:
 # Medido contra la pose de enlace de la malla vanilla (SkinWeights de los .X): con F a ambos lados
 # los 28 huesos de la piel coinciden con el reposo del rig (< 1° y < 1,6 cm). Con esto el bate de
 # Bob_AttackBat01_Hit golpea hacia adelante y los pies miran al frente.
-# Las mallas del juego (armas) están en ejes X del prop: en Blender van con F (MESH_TO_RIG).
+# Las mallas FBX de las armas: el juego las carga con MAKE_LEFT_HANDED (FileTask_LoadMesh.loadFBX), que
+# espeja Z de los vértices crudos -> en ejes X del prop quedan (x, y, -z). En Blender: F · S (MESH_TO_RIG).
 X_TO_RIG = Matrix(((1, 0, 0, 0), (0, 0, 1, 0), (0, 1, 0, 0), (0, 0, 0, 1)))
 X_LOCAL = X_TO_RIG
-MESH_TO_RIG = X_TO_RIG
+FBX_Z_MIRROR = Matrix.Diagonal((1, 1, -1, 1))
+MESH_TO_RIG = X_TO_RIG @ FBX_Z_MIRROR
 
 
 def x_globals(anim, tick):
@@ -321,8 +323,7 @@ def attach_weapon(rig, weapon_id, bone="Bip01_Prop1", fbx_id=None, tex_id=None):
     obj.data.materials.append(m)
     obj.matrix_world = Matrix.Identity(4)
     obj.data.transform(Matrix.Scale(100, 4))   # metros del FBX -> centímetros del rig
-    obj.data.transform(MESH_TO_RIG)              # ejes del prop del juego -> ejes del hueso en Blender
-    obj.data.flip_normals()
+    obj.data.transform(MESH_TO_RIG)              # vértices del FBX -> como los ve el juego -> hueso en Blender
     obj.parent = rig
     obj.parent_type = "BONE"
     obj.parent_bone = bone
