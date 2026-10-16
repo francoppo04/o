@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arsenal de Chatarra: ataque propio. Copia la estructura de los nodos vanilla de ataque
+     (melee/2handed/2HDefault.xml) y agrega la condicion ACWeapon, que fija el Lua del mod al
+     equipar el arma; con prioridad 5 reemplaza solo el golpe de esta arma. -->
+<animNode>
+	<m_Name>AC_RemoMolinete</m_Name>
+	<m_Priority>5</m_Priority>
+	<m_AnimName>Bob_AC_RemoMolinete</m_AnimName>
+	<m_Looped>false</m_Looped>
+	<m_BlendTime>0.15</m_BlendTime>
+	<m_BlendOutTime>0.25</m_BlendOutTime>
+	<m_EarlyTransitionOut>true</m_EarlyTransitionOut>
+	<m_SpeedScale>CombatSpeed</m_SpeedScale>
+	<m_Conditions x_name="061e2f4e-783b-5214-9486-fb9f414a4c1d">
+		<m_Name>ACWeapon</m_Name>
+		<m_Type>STRING</m_Type>
+		<m_Value>remo</m_Value>
+	</m_Conditions>
+	<m_Conditions x_name="13624d44-5fcb-52cf-8a6b-2f4fc98d677f">
+		<m_Name>AimFloorAnim</m_Name>
+		<m_Type>BOOL</m_Type>
+		<m_Value>false</m_Value>
+	</m_Conditions>
+	<m_Events x_name="3b638519-b49c-53d7-91e7-8c0723c54a28">
+		<m_EventName>SetVariable</m_EventName>
+		<m_TimePc>0.1</m_TimePc>
+		<m_ParameterValue>ZombieHitReaction=HeadLeft</m_ParameterValue>
+	</m_Events>
+	<m_Events x_name="fb64f698-f7e5-51d1-a941-b7d2f280da17">
+		<m_EventName>AttackCollisionCheck</m_EventName>
+		<m_TimePc>0.38</m_TimePc>
+		<m_ParameterValue>MeleeSwing</m_ParameterValue>
+	</m_Events>
+	<m_Events x_name="f18d0b47-39bc-58ed-920e-8a4f4ebc5560">
+		<m_EventName>AttackCollisionCheck</m_EventName>
+		<m_TimePc>0.75</m_TimePc>
+		<m_ParameterValue>MeleeSwing</m_ParameterValue>
+	</m_Events>
+	<m_Events x_name="246f4a1b-4811-5d6e-9b6d-e6b4d1e3613b">
+		<m_EventName>BlockMovement</m_EventName>
+		<m_TimePc>0.1</m_TimePc>
+		<m_ParameterValue>TRUE</m_ParameterValue>
+	</m_Events>
+	<m_Events x_name="81f42fb6-267a-5f03-867e-7424479354cd">
+		<m_EventName>BlockMovement</m_EventName>
+		<m_Time>End</m_Time>
+		<m_ParameterValue>FALSE</m_ParameterValue>
+	</m_Events>
+	<m_Events x_name="4f1e63e3-ee62-55c4-8f3e-e7a1dd1fee90">
+		<m_EventName>AttackAnim</m_EventName>
+		<m_Time>Start</m_Time>
+		<m_ParameterValue>TRUE</m_ParameterValue>
+	</m_Events>
+	<m_Events x_name="79e64b3c-73ac-50b2-ab53-c4eca6b64036">
+		<m_EventName>AttackAnim</m_EventName>
+		<m_Time>End</m_Time>
+		<m_ParameterValue>FALSE</m_ParameterValue>
+	</m_Events>
+	<m_Events x_name="5d927acd-8749-5391-99e7-604cdd8bb1c9">
+		<m_EventName>SetMeleeDelay</m_EventName>
+		<m_Time>End</m_Time>
+		<m_ParameterValue>14</m_ParameterValue>
+	</m_Events>
+	<m_Events x_name="d58eb4d0-9e0d-56e0-8c1c-db446f1725a3">
+		<m_EventName>PlaySwingSound</m_EventName>
+		<m_Time>Start</m_Time>
+		<m_ParameterValue></m_ParameterValue>
+	</m_Events>
+	<m_Events x_name="d1a778ae-23b4-530e-bb09-845838f0a197">
+		<m_EventName>PlayerVoiceSound</m_EventName>
+		<m_Time>Start</m_Time>
+		<m_ParameterValue>MeleeAttack</m_ParameterValue>
+	</m_Events>
+	<m_Transitions>
+		<m_Target>Idle2Handed</m_Target>
+		<m_AnimName>Bob_AimToIdle_Bat</m_AnimName>
+		<m_blendInTime>0.5</m_blendInTime>
+		<m_blendOutTime>0.5</m_blendOutTime>
+		<m_speedScale>1.3</m_speedScale>
+	</m_Transitions>
+	<m_Transitions>
+		<m_Target>sneakidle2handed</m_Target>
+		<m_AnimName>Bob_AimToIdle_Bat</m_AnimName>
+		<m_blendInTime>0.5</m_blendInTime>
+		<m_blendOutTime>0.5</m_blendOutTime>
+		<m_speedScale>1.3</m_speedScale>
+	</m_Transitions>
+	<m_Transitions>
+		<m_Target>sneakIdleLow2handed</m_Target>
+		<m_AnimName>Bob_AimToIdle_Bat</m_AnimName>
+		<m_blendInTime>0.5</m_blendInTime>
+		<m_blendOutTime>0.5</m_blendOutTime>
+		<m_speedScale>1.3</m_speedScale>
+	</m_Transitions>
+	<m_SubStateBoneWeights>
+		<boneName>Bip01_Spine1</boneName>
+	</m_SubStateBoneWeights>
+	<m_SubStateBoneWeights>
+		<boneName>Bip01_Neck</boneName>
+	</m_SubStateBoneWeights>
+	<m_SubStateBoneWeights>
+		<boneName>Bip01_BackPack</boneName>
+	</m_SubStateBoneWeights>
+	<m_SubStateBoneWeights>
+		<boneName>Bip01_Prop1</boneName>
+	</m_SubStateBoneWeights>
+	<m_SubStateBoneWeights>
+		<boneName>Bip01_Prop2</boneName>
+	</m_SubStateBoneWeights>
+	<m_SubStateBoneWeights>
+		<boneName>Bip01_Spine</boneName>
+		<includeDescendants>false</includeDescendants>
+	</m_SubStateBoneWeights>
+</animNode>

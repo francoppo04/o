@@ -650,6 +650,6 @@ module ArsenalChatarra
         Icon                    = AC_GarrasCarnicero,
         StaticModel             = AC_GarrasCarniceroL,
         WorldStaticModel        = AC_GarrasCarniceroL,
-        ReplaceInSecondHand     = AC_GarrasCarniceroL,
+        ReplaceInSecondHand     = AC_GarrasCarniceroL holdingbagleft,
     }
 }

@@ -6,9 +6,12 @@ local MAIN = "ArsenalChatarra.AC_GarrasCarnicero"
 local LEFT = "ArsenalChatarra.AC_GarrasCarniceroL"
 
 local function removeLeftGloves(inv)
-    local list = inv:getItemsFromFullType(LEFT)
+    -- también dentro de mochilas y bolsos
+    local list = inv:getAllTypeRecurse(LEFT)
     for i = list:size() - 1, 0, -1 do
-        inv:Remove(list:get(i))
+        local item = list:get(i)
+        local container = item:getContainer() or inv
+        container:Remove(item)
     end
 end
 
