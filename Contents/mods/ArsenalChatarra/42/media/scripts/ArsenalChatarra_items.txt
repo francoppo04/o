@@ -641,4 +641,15 @@ module ArsenalChatarra
         BreakSound              = AxeBreak,
         DropSound               = BaseballBatDrop,
     }
+
+    item AC_GarrasCarniceroL
+    {
+        DisplayCategory         = Weapon,
+        ItemType                = base:normal,
+        Weight                  = 0.1,
+        Icon                    = AC_GarrasCarnicero,
+        StaticModel             = AC_GarrasCarniceroL,
+        WorldStaticModel        = AC_GarrasCarniceroL,
+        ReplaceInSecondHand     = AC_GarrasCarniceroL,
+    }
 }

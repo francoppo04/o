@@ -20,11 +20,12 @@ HITS = (13, 25)   # frames de impacto (para los eventos del AnimSet)
 KEYS = {
     1:  ((-8, -20, 55), (0.45, -0.35, 0.80), (0, -1, 0)),     # guardia: pala delantera arriba-izquierda
     8:  ((-12, -10, 63), (-0.40, 0.25, 0.90), (0, -1, 0)),    # carga sobre el hombro derecho
-    13: ((-10, -30, 52), (-0.35, -0.80, -0.15), (0, 0, 1)),   # GOLPE 1: adelante-derecha
+    13: ((-8, -22, 56), (-0.35, -0.80, -0.15), (0, 0, 1)),   # GOLPE 1: adelante-derecha
     19: ((-2, -26, 60), (0.30, -0.20, 0.95), (-1, 0, 0)),     # giro: la pala trasera baja
-    25: ((5, -28, 52), (-0.40, 0.80, 0.30), (0, 0, 1)),       # GOLPE 2: pala trasera adelante-izquierda
+    25: ((4, -22, 56), (-0.40, 0.80, 0.30), (0, 0, 1)),       # GOLPE 2: pala trasera adelante-izquierda
     33: ((-8, -20, 55), (0.45, -0.35, 0.80), (0, -1, 0)),     # vuelve a la guardia
 }
+LEFT = {13: -14.0}   # en el golpe 1 la mano izquierda se desliza detrás de la derecha
 BODY = {  # frame: (cadera, torso, inclinación)
     1: (0, 0, 5), 8: (-15, -30, 0), 13: (15, 25, 15), 19: (0, 0, 5), 25: (-15, -25, 15), 33: (0, 0, 5),
 }
@@ -32,11 +33,11 @@ BODY = {  # frame: (cadera, torso, inclinación)
 
 def build():
     rig = al.load_rig()
-    an = al.Animator(rig, NAME, left_hand=20.0)
+    an = al.Animator(rig, NAME, left_hand=16.0)
     for f, (grip, along, head) in KEYS.items():
-        an.weapon(f, grip, along, head)
         hips, chest, lean = BODY[f]
         an.body(f, hips=hips, chest=chest, lean=lean)
+        an.weapon(f, grip, along, head, left=LEFT.get(f))
     return rig, an.finish(1, 33)
 
 

@@ -223,4 +223,16 @@ module Base
             rotate = 0.0000 0.0000 0.0000,
         }
     }
+
+    model AC_GarrasCarniceroL
+    {
+        mesh    = weapons/ArsenalChatarra/AC_GarrasCarniceroL,
+        texture = weapons/ArsenalChatarra/AC_GarrasCarnicero,
+
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
 }

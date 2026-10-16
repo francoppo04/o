@@ -44,14 +44,30 @@ TARGET_LENGTH = {
 }
 
 
+# Orientación especial: por defecto el largo (X de modelado) va a +Y, como un mango.
+# Las garras se llevan puestas: X de modelado (cuchillos) debe ir hacia los nudillos y Z (cuchillos
+# arriba) hacia el dorso de la mano. Matrices medidas en el Community Rig en pose de reposo
+# (dirección del antebrazo y dorso de la mano expresados en el espacio de Bip01_Prop1 / Bip01_Prop2).
+AXIS = {
+    "AC_GarrasCarnicero": Matrix(((-0.2164, 0.0364, -0.9756), (-0.9706, 0.0999, 0.219),
+                                  (0.1055, 0.9943, 0.0137))).to_4x4(),
+    "AC_GarrasCarniceroL": Matrix(((0.9689, 0.0856, -0.2323), (0.2298, 0.0377, 0.9725),
+                                   (0.0921, -0.9956, 0.0169))).to_4x4(),
+}
+# variantes que reutilizan el modelo de otra arma
+SOURCE = {"AC_GarrasCarniceroL": "AC_GarrasCarnicero"}
+TARGET_LENGTH["AC_GarrasCarniceroL"] = 0.38
+
+
 def export(name):
-    src = ART / name
+    base = SOURCE.get(name, name)
+    src = ART / base
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    bpy.ops.import_scene.fbx(filepath=str(src / f"{name}.fbx"))
+    bpy.ops.import_scene.fbx(filepath=str(src / f"{base}.fbx"))
     obj = [o for o in bpy.context.scene.objects if o.type == "MESH"][0]
     obj.name = name
     # material con la textura (el FBX solo guarda el nombre del archivo)
-    img = bpy.data.images.load(str(src / f"{name}.png"))
+    img = bpy.data.images.load(str(src / f"{base}.png"))
     m = obj.data.materials[0] if obj.data.materials else bpy.data.materials.new(name)
     m.use_nodes = True
     nt = m.node_tree
@@ -62,16 +78,18 @@ def export(name):
     if not obj.data.materials:
         obj.data.materials.append(m)
     img.pack()
-    bpy.ops.wm.save_as_mainfile(filepath=str(src / f"{name}.blend"), compress=True)
+    if base == name:
+        bpy.ops.wm.save_as_mainfile(filepath=str(src / f"{name}.blend"), compress=True)
 
     # art/ está en convención de modelado (largo sobre +X): rotar 90° en Z (X->Y) y escalar
     length = obj.dimensions.x
     k = TARGET_LENGTH[name] / length
-    obj.data.transform(Matrix.Rotation(math.radians(90), 4, "Z") @ Matrix.Scale(k, 4))
+    obj.data.transform(AXIS.get(name, Matrix.Rotation(math.radians(90), 4, "Z")) @ Matrix.Scale(k, 4))
     obj.matrix_world = Matrix.Identity(4)
-    lo = min(v.co.y for v in obj.data.vertices)
-    hi = max(v.co.y for v in obj.data.vertices)
-    print(f"[export_mod] {name}: largo {length:.3f} -> {hi - lo:.3f} m, Y {lo:+.3f}..{hi:+.3f}")
+    for ax in "xyz":
+        lo = min(getattr(v.co, ax) for v in obj.data.vertices)
+        hi = max(getattr(v.co, ax) for v in obj.data.vertices)
+        print(f"[export_mod] {name}: {ax.upper()} {lo:+.3f}..{hi:+.3f}")
 
     MODELS.mkdir(parents=True, exist_ok=True)
     TEXTURES.mkdir(parents=True, exist_ok=True)
@@ -81,8 +99,8 @@ def export(name):
                              apply_unit_scale=False, apply_scale_options="FBX_SCALE_NONE", bake_space_transform=True,
                              axis_forward="Y", axis_up="Z", object_types={"MESH"}, mesh_smooth_type="FACE",
                              path_mode="STRIP")
-    shutil.copyfile(src / f"{name}.png", TEXTURES / f"{name}.png")
-    shutil.copyfile(src / "icon_32.png", MOD / "textures" / f"Item_{name}.png")
+    shutil.copyfile(src / f"{base}.png", TEXTURES / f"{base}.png")
+    shutil.copyfile(src / "icon_32.png", MOD / "textures" / f"Item_{base}.png")
     print(f"[export_mod] {name} -> mod")
 
 

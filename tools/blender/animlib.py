@@ -23,26 +23,24 @@ FPS = 30
 
 
 # ------------------------------------------------------------------ rig
+DEFORM_ARM = {s: (f"Bip01_{s}_UpperArm", f"Bip01_{s}_Forearm", f"Bip01_{s}_Hand") for s in ("R", "L")}
+
+
 def load_rig():
+    """Abre el rig y suelta los huesos de deformación (Bip01_*) de los controles: se animan
+    directamente, con IK propio para los brazos. Es lo que exporta el GLB."""
     bpy.ops.wm.open_mainfile(filepath=str(RIG_BLEND))
     rig = bpy.data.objects[RIG]
     bpy.context.scene.render.fps = FPS
-    for side in ("R", "L"):
-        pb = rig.pose.bones
-        # brazos en modo IK (el rig viene en FK)
-        for bone, fk, ik in ((f"Bip01_{side}_UpperArm", f"CTRL-UpperArmFK.{side}", f"IK-UpperArm.{side}"),
-                             (f"Bip01_{side}_Forearm", f"CTRL-ForearmFK.{side}", f"IK-Forearm.{side}")):
-            for c in pb[bone].constraints:
-                if getattr(c, "subtarget", "") == fk:
-                    c.influence = 0.0
-                elif getattr(c, "subtarget", "") == ik:
-                    c.influence = 1.0
-        for c in pb[f"Bip01_{side}_Hand"].constraints:
-            c.influence = 1.0 if c.subtarget == f"CTRL-ArmIK.{side}" else 0.0
-        for c in pb[f"Bip01_{side}_Forearm"].constraints:
-            if c.subtarget.startswith("HLPR-WristTwistFK"):
-                c.influence = 0.0
+    for pb in rig.pose.bones:
+        if pb.name.startswith("Bip01"):
+            for c in list(pb.constraints):
+                pb.constraints.remove(c)
+            pb.rotation_mode = "QUATERNION"
+            pb.location = (0, 0, 0)
+            pb.rotation_quaternion = (1, 0, 0, 0)
     rig.animation_data_create()
+    bpy.context.view_layer.update()
     return rig
 
 
@@ -62,6 +60,37 @@ def frame_from(grip, along, head):
     return m
 
 
+# Puños: dirección de los nudillos (X) y del dorso (Z) de cada mano expresadas en el espacio de su
+# hueso de prop, medidas en la pose de reposo del rig (iguales a las que usa export_mod para las garras).
+KNUCKLES = {"R": (Vector((-0.2164, -0.9706, 0.1055)), Vector((-0.9756, 0.219, 0.0137))),
+            "L": (Vector((0.9689, 0.2298, 0.0921)), Vector((-0.2323, 0.9725, 0.0169)))}
+
+
+def fist(side, pos, punch, dorsal=(0, 0, 1)):
+    """Matriz del hueso de prop para que el puño `side` esté en `pos` con los nudillos hacia
+    `punch` y el dorso hacia `dorsal` (espacio armature)."""
+    kx, kz = KNUCKLES[side]
+    d = Vector(punch).normalized()
+    u = Vector(dorsal)
+    u = (u - d * u.dot(d)).normalized()
+    W = Matrix((d, u.cross(d), u)).transposed()
+    kz = (kz - kx * kz.dot(kx)).normalized()
+    K = Matrix((kx, kz.cross(kx), kz)).transposed()
+    m = (W @ K.transposed()).to_4x4()
+    m.translation = Vector(pos)
+    return m
+
+
+def _basis(d, pole):
+    y = d.normalized()
+    z = (pole - y * pole.dot(y)).normalized()
+    return Matrix((y.cross(z), y, z)).transposed()
+
+
+def _about(head, rot):
+    return Matrix.Translation(head) @ rot.to_4x4() @ Matrix.Translation(-head)
+
+
 class Animator:
     def __init__(self, rig, name, left_hand=18.0, two_hands=True):
         self.rig = rig
@@ -70,61 +99,97 @@ class Animator:
         self.two_hands = two_hands
         self.action = bpy.data.actions.new(name)
         rig.animation_data.action = self.action
-        # relación mano/prop en la pose de reposo del rig = cómo agarra el juego
-        pr, hr = rest(rig, "Bip01_Prop1"), rest(rig, "Bip01_R_Hand")
-        self.hand_in_prop = pr.inverted() @ hr
-        pl, hl = rest(rig, "Bip01_Prop2"), rest(rig, "Bip01_L_Hand")
-        self.lhand_in_prop = pl.inverted() @ hl
+        # relación mano/prop de la pose de reposo = cómo agarra el juego
+        self.hand_in_prop = {s: rest(rig, p).inverted() @ rest(rig, f"Bip01_{s}_Hand")
+                             for s, p in (("R", "Bip01_Prop1"), ("L", "Bip01_Prop2"))}
+        self._pose = {}
 
-    def _set(self, bone, m, frame):
-        pb = self.pb[bone]
-        pb.matrix = m
+    # -------------------------------------------------------------- internos
+    def _put(self, bone, m):
+        self.pb[bone].matrix = m
         bpy.context.view_layer.update()
-        pb.keyframe_insert("location", frame=frame)
-        pb.keyframe_insert("rotation_quaternion", frame=frame)
+        self._pose[bone] = m
 
+    def _key(self, frame):
+        for bone in self._pose:
+            pb = self.pb[bone]
+            pb.keyframe_insert("location", frame=frame)
+            pb.keyframe_insert("rotation_quaternion", frame=frame)
+        self._pose = {}
+
+    def _reset(self):
+        for pb in self.pb:
+            if pb.name.startswith("Bip01"):
+                pb.location = (0, 0, 0)
+                pb.rotation_quaternion = (1, 0, 0, 0)
+        bpy.context.view_layer.update()
+
+    def _arm(self, side, hand_m):
+        """IK de dos huesos: brazo y antebrazo apuntan a la muñeca, la mano queda en hand_m."""
+        up, fo, ha = DEFORM_ARM[side]
+        s = 1 if side == "L" else -1
+        pole = Vector((s * 0.35, 0.5, -1.0)).normalized()   # codos hacia abajo y atrás
+        S = self.pb[up].matrix.translation.copy()
+        T = hand_m.translation.copy()
+        r_up, r_fo, r_ha = (rest(self.rig, b) for b in (up, fo, ha))
+        a = (r_fo.translation - r_up.translation).length
+        b = (r_ha.translation - r_fo.translation).length
+        d = max(min((T - S).length, a + b - 0.01), abs(a - b) + 0.01)
+        u = (T - S).normalized()
+        x = (a * a + d * d - b * b) / (2 * d)
+        h = math.sqrt(max(a * a - x * x, 0))
+        p = (pole - u * pole.dot(u)).normalized()
+        E = S + u * x + p * h
+        T = S + u * d
+        for bone, head, tip, r, r_next in ((up, S, E, r_up, r_fo), (fo, E, T, r_fo, r_ha)):
+            rot = _basis(tip - head, pole) @ _basis(r_next.translation - r.translation, pole).transposed()
+            m = rot.to_4x4() @ r
+            m.translation = head
+            self._put(bone, m)
+        m = hand_m.copy()
+        m.translation = T
+        self._put(ha, m)
+
+    # -------------------------------------------------------------- API
     def body(self, frame, hips=0.0, chest=0.0, lean=0.0, crouch=0.0, spine=0.0):
         """Giro de cadera/torso (grados, + = hacia la izquierda del personaje), inclinación hacia
-        adelante (lean, grados) y agacharse (crouch, cm)."""
-        for bone, yaw, pitch in (("CTRL-Pelvis", hips, 0.0), ("CTRL-Spine1", spine, lean * .4),
-                                 ("CTRL-Chest", chest, lean * .6)):
-            pb = self.pb[bone]
-            pb.rotation_mode = "QUATERNION"
-            pb.rotation_quaternion = (Quaternion((0, 0, 1), math.radians(yaw)) @
-                                      Quaternion((1, 0, 0), math.radians(-pitch)))
-            pb.keyframe_insert("rotation_quaternion", frame=frame)
-        root = self.pb["CTRL-Pelvis"]
-        root.location = (0, 0, 0)
-        root.location.z = -crouch  # en espacio del hueso; suficiente para un leve agache
-        root.keyframe_insert("location", frame=frame)
+        adelante (lean, grados) y agacharse (crouch, cm). Se aplica antes de las manos."""
+        self._reset()
+        pel = rest(self.rig, "Bip01_Pelvis")
+        m = Matrix.Translation((0, 0, -crouch)) @ _about(pel.translation, Matrix.Rotation(math.radians(hips), 3, "Z")) @ pel
+        self._put("Bip01_Pelvis", m)
+        for bone, k in (("Bip01_Spine", .4), ("Bip01_Spine1", .6)):
+            cur = self.pb[bone].matrix.copy()
+            rot = Matrix.Rotation(math.radians((chest - hips) * k + spine * k), 3, "Z") @ \
+                Matrix.Rotation(math.radians(lean * k), 3, "X")
+            self._put(bone, _about(cur.translation, rot) @ cur)
+        self._body_frame = frame
 
-    def weapon(self, frame, grip, along, head):
-        """Keyframe del arma y de las dos manos."""
+    def weapon(self, frame, grip, along, head, left=None):
+        """Keyframe del arma (hueso Bip01_Prop1) y de las dos manos sobre el mango.
+        left: cm de la mano izquierda sobre el mango para este keyframe (negativo = detrás de la derecha)."""
         m = frame_from(grip, along, head)
-        self._set("CTRL-Prop.R", m, frame)
-        self._set("CTRL-ArmIK.R", m @ self.hand_in_prop, frame)
+        self._put("Bip01_Prop1", m)
+        self._arm("R", m @ self.hand_in_prop["R"])
         if self.two_hands:
-            ml = m @ Matrix.Translation((0, self.left_hand, 0)) @ Matrix.Rotation(math.pi, 4, "Y")
-            self._set("CTRL-ArmIK.L", ml @ self.hand_in_prop, frame)
+            ml = m @ Matrix.Translation((0, self.left_hand if left is None else left, 0)) @ Matrix.Rotation(math.pi, 4, "Y")
+            self._arm("L", ml @ self.hand_in_prop["R"] @ Matrix.Rotation(math.pi, 4, "Z"))
+        self._key(frame)
+
+    def props(self, frame, right, left):
+        """Keyframe de dos props independientes (p.ej. guantes): right/left = matriz del hueso de
+        prop (Bip01_Prop1 / Bip01_Prop2) en espacio armature; cada mano lo sostiene como en reposo."""
+        self._put("Bip01_Prop1", right)
+        self._put("Bip01_Prop2", left)
+        self._arm("R", right @ self.hand_in_prop["R"])
+        self._arm("L", left @ self.hand_in_prop["L"])
+        self._key(frame)
 
     def finish(self, start, end):
         self.action.frame_range = (start, end)
         self.action.use_frame_range = True
         bpy.context.scene.frame_start, bpy.context.scene.frame_end = start, end
-        for fc in _fcurves(self.action):
-            for k in fc.keyframe_points:
-                k.interpolation = "BEZIER"
         return self.action
-
-
-def _fcurves(action):
-    try:
-        for layer in action.layers:
-            for strip in layer.strips:
-                for bag in strip.channelbags:
-                    yield from bag.fcurves
-    except AttributeError:
-        yield from action.fcurves
 
 
 # --------------------------------------------------------------- exportar
@@ -169,13 +234,13 @@ def export_glb(rig, action, path):
 
 
 # ------------------------------------------------------------- vista previa
-def attach_weapon(rig, weapon_id):
+def attach_weapon(rig, weapon_id, bone="Bip01_Prop1", fbx_id=None, tex_id=None):
     """Carga el FBX del mod (convención vanilla: metros, largo sobre +Y) y lo cuelga de Bip01_Prop1."""
-    fbx = ROOT / "Contents/mods/ArsenalChatarra/42/media/models_X/weapons/ArsenalChatarra" / f"{weapon_id}.fbx"
+    fbx = ROOT / "Contents/mods/ArsenalChatarra/42/media/models_X/weapons/ArsenalChatarra" / f"{fbx_id or weapon_id}.fbx"
     before = set(bpy.data.objects)
     bpy.ops.import_scene.fbx(filepath=str(fbx))
     obj = [o for o in bpy.data.objects if o not in before and o.type == "MESH"][0]
-    tex = ROOT / f"art/{weapon_id}/{weapon_id}.png"
+    tex = ROOT / f"art/{tex_id or weapon_id}/{tex_id or weapon_id}.png"
     m = bpy.data.materials.new(weapon_id)
     m.use_nodes = True
     t = m.node_tree.nodes.new("ShaderNodeTexImage")
@@ -187,8 +252,8 @@ def attach_weapon(rig, weapon_id):
     obj.data.transform(Matrix.Scale(100, 4))   # metros del FBX -> centímetros del rig
     obj.parent = rig
     obj.parent_type = "BONE"
-    obj.parent_bone = "Bip01_Prop1"
-    bone = rig.data.bones["Bip01_Prop1"]
+    obj.parent_bone = bone
+    bone = rig.data.bones[bone]
     obj.matrix_parent_inverse = Matrix.Identity(4)
     obj.location = (0, -bone.length, 0)       # el hijo de hueso arranca en la cola: volver a la cabeza
     return obj
