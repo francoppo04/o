@@ -1,0 +1,16 @@
+{
+    "Base.AT_M4": "M4 Carbine",
+    "Base.AT_MCX": "MX-C Compact Carbine",
+    "Base.AT_AK101": "Folding AK-101",
+    "Base.AT_Marlin336": "336T Tactical Lever Carbine",
+    "Base.AT_G19": "G-19 Pistol",
+    "Base.AT_SkullMag": "M4 Magazine (Skull)",
+    "Base.AT_LancerMag": "MX-C Translucent Magazine",
+    "Base.AT_AKMag": "AK-101 Magazine",
+    "Base.AT_G19Mag": "G-19 Magazine",
+    "Base.AT_ACOG": "4x Combat Sight",
+    "Base.AT_LPVO": "1-6x Variable Scope",
+    "Base.AT_HoloSight": "Holographic Sight",
+    "Base.AT_Thermal": "Thermal Scope",
+    "Base.AT_TacLight": "Tactical Weapon Light"
+}

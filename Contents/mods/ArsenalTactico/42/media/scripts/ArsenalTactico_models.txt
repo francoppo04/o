@@ -1,0 +1,239 @@
+/*
+    Arsenal Tactico - modelos. Generado por tools/build_arsenal_tactico.py desde
+    art/<ID>/attachments.json (tools/blender/gunkit.py). Convencion vanilla: rifles con el largo
+    sobre +Y y arriba +Z (M16_Rifle); pistolas arriba -Z (M9_Pistol). Las partes se montan en
+    at_optic / at_light (en pistolas rotate 180 0 -180, como el scope de Handgun03).
+*/
+module Base
+{
+
+    model AT_M4
+    {
+        mesh = weapons/ArsenalTactico/AT_M4,
+        texture = weapons/ArsenalTactico/AT_M4,
+        attachment muzzle
+        {
+            offset = 0.0000 0.3340 0.0300,
+            rotate = -90.0000 0.0000 -180.0000,
+        }
+        attachment at_optic
+        {
+            offset = 0.0000 0.0100 0.0580,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = 0.0000 0.2050 0.0050,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment world
+        {
+            offset = 0.0200 0.0810 0.0000,
+            rotate = 180.0000 0.0000 180.0000,
+        }
+    }
+
+    model AT_MCX
+    {
+        mesh = weapons/ArsenalTactico/AT_MCX,
+        texture = weapons/ArsenalTactico/AT_MCX,
+        attachment muzzle
+        {
+            offset = 0.0000 0.2800 0.0300,
+            rotate = -90.0000 0.0000 -180.0000,
+        }
+        attachment at_optic
+        {
+            offset = 0.0000 0.0200 0.0590,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = 0.0000 0.2250 0.0060,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment world
+        {
+            offset = 0.0200 0.0560 0.0000,
+            rotate = 180.0000 0.0000 180.0000,
+        }
+    }
+
+    model AT_AK101
+    {
+        mesh = weapons/ArsenalTactico/AT_AK101,
+        texture = weapons/ArsenalTactico/AT_AK101,
+        attachment muzzle
+        {
+            offset = 0.0000 0.2980 0.0200,
+            rotate = -90.0000 0.0000 -180.0000,
+        }
+        attachment at_optic
+        {
+            offset = -0.0070 0.0300 0.0520,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = 0.0000 0.1650 -0.0080,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment world
+        {
+            offset = 0.0200 0.0610 0.0000,
+            rotate = 180.0000 0.0000 180.0000,
+        }
+    }
+
+    model AT_Marlin336
+    {
+        mesh = weapons/ArsenalTactico/AT_Marlin336,
+        texture = weapons/ArsenalTactico/AT_Marlin336,
+        attachment muzzle
+        {
+            offset = 0.0000 0.3880 0.0300,
+            rotate = -90.0000 0.0000 -180.0000,
+        }
+        attachment at_optic
+        {
+            offset = 0.0000 0.0300 0.0460,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = 0.0000 0.2050 -0.0020,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment world
+        {
+            offset = 0.0200 0.1080 0.0000,
+            rotate = 180.0000 0.0000 180.0000,
+        }
+    }
+
+    model AT_G19
+    {
+        mesh = weapons/ArsenalTactico/AT_G19,
+        texture = weapons/ArsenalTactico/AT_G19,
+        attachment muzzle
+        {
+            offset = -0.0000 0.1200 -0.0260,
+            rotate = -90.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = -0.0000 0.0840 0.0040,
+            rotate = 180.0000 0.0000 -180.0000,
+        }
+        attachment world
+        {
+            offset = -0.0090 0.0620 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment Bip01_Prop2
+        {
+            offset = -0.0338 0.0424 0.0000,
+            rotate = 90.0008 1.1964 -90.0396,
+        }
+    }
+
+    model AT_SkullMag
+    {
+        mesh = weapons/ArsenalTactico/AT_SkullMag,
+        texture = weapons/ArsenalTactico/AT_SkullMag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_LancerMag
+    {
+        mesh = weapons/ArsenalTactico/AT_LancerMag,
+        texture = weapons/ArsenalTactico/AT_LancerMag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_AKMag
+    {
+        mesh = weapons/ArsenalTactico/AT_AKMag,
+        texture = weapons/ArsenalTactico/AT_AKMag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_G19Mag
+    {
+        mesh = weapons/ArsenalTactico/AT_G19Mag,
+        texture = weapons/ArsenalTactico/AT_G19Mag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_ACOG
+    {
+        mesh = weapons/ArsenalTactico/AT_ACOG,
+        texture = weapons/ArsenalTactico/AT_ACOG,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_LPVO
+    {
+        mesh = weapons/ArsenalTactico/AT_LPVO,
+        texture = weapons/ArsenalTactico/AT_LPVO,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_HoloSight
+    {
+        mesh = weapons/ArsenalTactico/AT_HoloSight,
+        texture = weapons/ArsenalTactico/AT_HoloSight,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_Thermal
+    {
+        mesh = weapons/ArsenalTactico/AT_Thermal,
+        texture = weapons/ArsenalTactico/AT_Thermal,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_TacLight
+    {
+        mesh = weapons/ArsenalTactico/AT_TacLight,
+        texture = weapons/ArsenalTactico/AT_TacLight,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+}

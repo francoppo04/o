@@ -122,6 +122,7 @@ def main(folder, only=None):
     pat = re.compile(only, re.I) if only else PATTERN
     files = sorted(p for p in Path(folder).iterdir() if p.suffix.lower() == ".x" and pat.search(p.stem))
     print(f"# {len(files)} animaciones en {folder}")
+    print("# L@Prop1 = mano izquierda medida respecto del arma principal (donde toma el guardamanos)")
     print("# clip | frame | lado | muñeca en el prop (cm) | nudillos (eje del prop) | dorso | antebrazo")
     for f in files:
         try:
@@ -132,8 +133,8 @@ def main(folder, only=None):
         n = max((len(v["R"]) for v in keys.values() if "R" in v), default=1)
         for idx in sorted({0, n // 2, n - 1}):
             G = pose(parents, rest, keys, idx)
-            for side, prop in (("R", "Bip01_Prop1"), ("L", "Bip01_Prop2")):
-                r = relation(G, side, prop)
+            for side, prop in (("R", "Bip01_Prop1"), ("L", "Bip01_Prop2"), ("L@Prop1", "Bip01_Prop1")):
+                r = relation(G, side[0], prop)
                 if r:
                     print(f"{f.stem} | {idx} | {side} | {r[0]} | {r[1]} | {r[2]} | {r[3]}")
 

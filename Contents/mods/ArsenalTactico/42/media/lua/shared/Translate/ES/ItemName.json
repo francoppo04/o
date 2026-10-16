@@ -1,0 +1,16 @@
+{
+    "Base.AT_M4": "Carabina M4",
+    "Base.AT_MCX": "Carabina compacta MX-C",
+    "Base.AT_AK101": "AK-101 plegable",
+    "Base.AT_Marlin336": "Carabina de palanca táctica 336T",
+    "Base.AT_G19": "Pistola G-19",
+    "Base.AT_SkullMag": "Cargador de M4 (calavera)",
+    "Base.AT_LancerMag": "Cargador translúcido de MX-C",
+    "Base.AT_AKMag": "Cargador de AK-101",
+    "Base.AT_G19Mag": "Cargador de G-19",
+    "Base.AT_ACOG": "Mira de combate 4x",
+    "Base.AT_LPVO": "Mira variable 1-6x",
+    "Base.AT_HoloSight": "Mira holográfica",
+    "Base.AT_Thermal": "Mira térmica",
+    "Base.AT_TacLight": "Linterna táctica"
+}

@@ -1,6 +1,7 @@
 """Verificador de los scripts del mod antes de subir cambios.
 
-Uso: python tools/check_scripts.py   (sale con código 1 si hay errores)
+Uso: python tools/check_scripts.py [ArsenalChatarra|ArsenalTactico]   (sale con código 1 si hay errores;
+sin argumento revisa todos los mods)
 
 Reproduce cómo los lee Project Zomboid:
   * Los comentarios de bloque se ANIDAN: una barra-asterisco dentro de un comentario abre otro nivel
@@ -18,9 +19,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MOD = ROOT / "Contents" / "mods" / "ArsenalChatarra" / "42"
-MEDIA = MOD / "media"
-MODULE = "ArsenalChatarra"
+# mod: (módulo de los ítems, prefijo de los modelos propios)
+MODS = {"ArsenalChatarra": ("ArsenalChatarra", "AC_"), "ArsenalTactico": ("Base", "AT_")}
+MOD = MEDIA = MODULE = PREFIX = None
 
 errors, warnings = [], []
 
@@ -104,7 +105,7 @@ def main():
     for name, body in items.items():
         for key in ("WeaponSprite", "StaticModel", "WorldStaticModel"):
             ref = prop(body, key)
-            if ref and ref.startswith("AC_") and ref not in models:
+            if ref and ref.startswith(PREFIX) and ref not in models:
                 err(f"item {name}", f"{key} = {ref} no tiene bloque model")
         icon = prop(body, "Icon")
         if icon and not (MEDIA / "textures" / f"Item_{icon}.png").exists():
@@ -116,11 +117,37 @@ def main():
         if tex and not (MEDIA / "textures" / f"{tex}.png").exists():
             err(f"model {name}", f"falta textures/{tex}.png")
 
+    # armas de fuego: cargadores, partes y attachments
+    for name, body in items.items():
+        mag = prop(body, "MagazineType")
+        if mag and mag.startswith(f"Base.{PREFIX}") and mag[5:] not in items:
+            err(f"item {name}", f"MagazineType = {mag} no existe")
+        gun = prop(body, "GunType")
+        if gun and gun.startswith(f"Base.{PREFIX}") and gun[5:] not in items:
+            err(f"item {name}", f"GunType = {gun} no existe")
+        mount = prop(body, "MountOn")
+        for g in (mount.split(";") if mount else []):
+            if g.startswith(f"Base.{PREFIX}") and g[5:] not in items:
+                err(f"item {name}", f"MountOn incluye {g}, que no existe")
+        for m in re.finditer(r"^\s*ModelWeaponPart\s*=\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s*,", body, re.M):
+            part, model, att = m.group(1), m.group(2), m.group(3)
+            short = part.split(".")[-1]
+            if short.startswith(PREFIX):
+                if short not in items:
+                    err(f"item {name}", f"ModelWeaponPart: la parte {part} no existe")
+                elif f"Base.{name}" not in (prop(items[short], "MountOn") or "").split(";"):
+                    err(f"item {name}", f"ModelWeaponPart: {part} no se puede montar (falta en su MountOn)")
+                if model not in models:
+                    err(f"item {name}", f"ModelWeaponPart: el modelo {model} no existe")
+            sprite = prop(body, "WeaponSprite")
+            if sprite in models and not re.search(rf"\battachment\s+{att}\b", models[sprite]):
+                err(f"item {name}", f"ModelWeaponPart: el modelo {sprite} no tiene attachment {att}")
+
     used = set()
     for name, body in recipes.items():
         used |= {(f"recipe {name}", i) for i in re.findall(rf"{MODULE}\.(\w+)", body)}
     for path in MEDIA.rglob("*.lua"):
-        used |= {(str(path.relative_to(ROOT)), i) for i in re.findall(rf"{MODULE}\.(\w+)", path.read_text())}
+        used |= {(str(path.relative_to(ROOT)), i) for i in re.findall(rf"{MODULE}\.({PREFIX}\w+)", path.read_text())}
     for where, ident in sorted(used):
         if ident not in items:
             err(where, f"{MODULE}.{ident} no existe como item (el mundo no carga si es salida de receta)")
@@ -133,7 +160,7 @@ def main():
             err(where, f"JSON inválido: {e}")
             continue
         if path.name == "ItemName.json":
-            missing = {f"{MODULE}.{i}" for i in items} - set(data)
+            missing = {f"{MODULE}.{i}" for i in items if i.startswith(PREFIX)} - set(data)
             if missing:
                 warn(where, f"sin traducción: {sorted(missing)}")
         if path.name == "Recipes.json":
@@ -143,10 +170,22 @@ def main():
 
     for line in errors + warnings:
         print(line)
-    print(f"{len(items)} items, {len(models)} modelos, {len(recipes)} recetas -> "
+    print(f"[{MOD.parent.name}] {len(items)} items, {len(models)} modelos, {len(recipes)} recetas -> "
           f"{len(errors)} error(es), {len(warnings)} aviso(s)")
-    return 1 if errors else 0
+    n = len(errors)
+    errors.clear()
+    warnings.clear()
+    return 1 if n else 0
+
+
+def run(name):
+    global MOD, MEDIA, MODULE, PREFIX
+    MOD = ROOT / "Contents" / "mods" / name / "42"
+    MEDIA = MOD / "media"
+    MODULE, PREFIX = MODS[name]
+    return main()
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    names = sys.argv[1:] or [n for n in MODS if (ROOT / "Contents" / "mods" / n).exists()]
+    sys.exit(max(run(n) for n in names))
