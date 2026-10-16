@@ -192,6 +192,46 @@ class Animator:
         return self.action
 
 
+# ------------------------------------------------------- animaciones vanilla
+# Las .X del juego están en convención DirectX (mano izquierda): el juego carga los GLB del rig
+# negando Z (mundo y ejes de cada hueso), así que  rig = F · X · L  con
+#   F = intercambiar Y y Z (espejo: Y arriba -> Z arriba, el frente -Z -> -Y del rig),
+#   L = diag(1, 1, -1) en los ejes locales de cada hueso, y metros -> cm.
+# Comprobado: con esto el bate de Bob_AttackBat01_Hit golpea hacia adelante, el pie derecho queda a
+# -X y los offsets padre-hijo coinciden con el rig (< 0,7 cm en columna y brazos).
+# Las mallas del juego están en ejes X del prop: para verlas en Blender se espeja Z (MESH_TO_RIG).
+X_TO_RIG = Matrix(((1, 0, 0, 0), (0, 0, 1, 0), (0, 1, 0, 0), (0, 0, 0, 1)))
+X_LOCAL = Matrix.Diagonal((1, 1, -1, 1))
+MESH_TO_RIG = X_LOCAL
+
+
+def x_globals(anim, tick):
+    import xanim
+    out = {}
+    for b, m in xanim.globals_at(anim, tick).items():
+        m = m.copy()
+        m.translation = m.translation * 100
+        out[b] = X_TO_RIG @ m @ X_LOCAL
+    return out
+
+
+def x_frames(anim):
+    """Cantidad de frames a 30 fps de una animación .X (frame 1 = tick 0)."""
+    import xanim
+    return int(round(xanim.duration(anim) / anim["ticks"] * FPS)) + 1
+
+
+def x_pose(anim, frame):
+    """Matrices (espacio armature del rig) de todos los huesos Bip01 en el frame (30 fps, desde 1)."""
+    tick = (frame - 1) / FPS * anim["ticks"]
+    return x_globals(anim, tick)
+
+
+def load_x(path):
+    import xanim
+    return xanim.parse(str(path))
+
+
 # --------------------------------------------------------------- exportar
 def export_glb(rig, action, path):
     """Igual que el exportador del Community Rig (PZ_HumanRig_Export): GLB a 30 fps con
@@ -250,6 +290,8 @@ def attach_weapon(rig, weapon_id, bone="Bip01_Prop1", fbx_id=None, tex_id=None):
     obj.data.materials.append(m)
     obj.matrix_world = Matrix.Identity(4)
     obj.data.transform(Matrix.Scale(100, 4))   # metros del FBX -> centímetros del rig
+    obj.data.transform(MESH_TO_RIG)              # ejes del prop del juego -> ejes del hueso en Blender
+    obj.data.flip_normals()
     obj.parent = rig
     obj.parent_type = "BONE"
     obj.parent_bone = bone

@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 import bpy
-from mathutils import Matrix
+from mathutils import Matrix, Vector
 
 ROOT = Path(__file__).resolve().parents[2]
 ART = ROOT / "art"
@@ -34,7 +34,7 @@ TARGET_LENGTH = {
     "AC_PareDefinitivo": 0.85,  # más largo que el mazo: poste + contrapeso
     "AC_LaDesafinada": 0.70,
     "AC_GarrasCarnicero": 0.38,   # una mano, tipo cuchillo
-    "AC_RemoDestripador": 1.10,
+    "AC_RemoDestripador": 0.90,   # 1,10 se veía muy largo en el juego
     "AC_TridenteCarnicero": 1.20, # lanza: agarre a ~30% del largo
     "AC_PalaTiburon": 0.75,       # pala vanilla 0.65
     "AC_SartenInfierno": 0.45,    # una mano
@@ -45,15 +45,20 @@ TARGET_LENGTH = {
 
 
 # Orientación especial: por defecto el largo (X de modelado) va a +Y, como un mango.
-# Las garras se llevan puestas: X de modelado (cuchillos) debe ir hacia los nudillos y Z (cuchillos
-# arriba) hacia el dorso de la mano. Matrices medidas en el Community Rig en pose de reposo
-# (dirección del antebrazo y dorso de la mano expresados en el espacio de Bip01_Prop1 / Bip01_Prop2).
+# Las garras se llevan puestas: X de modelado (cuchillos) va hacia los nudillos, Z (cuchillos arriba)
+# hacia el dorso de la mano y el pulgar del modelo (-Y) hacia el pulgar. Ejes medidos en la mano de
+# las animaciones vanilla de una mano (cuchillo/puño, tools/blender/animkit.py: Body.fist_axes), que
+# es como el juego pone Bip01_Prop1/Prop2 respecto de cada mano. Columnas = destino de X, Y, Z.
+# El modelo es un guante izquierdo: el derecho sale espejado (determinante -1).
 AXIS = {
-    "AC_GarrasCarnicero": Matrix(((-0.2164, 0.0364, -0.9756), (-0.9706, 0.0999, 0.219),
-                                  (0.1055, 0.9943, 0.0137))).to_4x4(),
-    "AC_GarrasCarniceroL": Matrix(((0.9689, 0.0856, -0.2323), (0.2298, 0.0377, 0.9725),
-                                   (0.0921, -0.9956, 0.0169))).to_4x4(),
+    "AC_GarrasCarnicero": Matrix(((-0.0435, 0.1217, -0.9916), (-0.258, -0.9603, -0.1066),
+                                  (0.9652, -0.2512, -0.0731))).transposed().to_4x4(),
+    "AC_GarrasCarniceroL": Matrix(((0.9921, 0.0823, -0.0946), (0.0793, -0.9962, -0.0359),
+                                   (-0.0972, 0.0282, -0.9949))).transposed().to_4x4(),
 }
+# centro del puño (m, espacio del prop) donde va el centro del guante, y centro del guante en art/
+FIST_CENTER = {"AC_GarrasCarnicero": (-0.0337, 0.0328, 0.0273), "AC_GarrasCarniceroL": (-0.0302, 0.0124, 0.0424)}
+MODEL_CENTER = {"AC_GarrasCarnicero": (0.03, 0.0, 0.01)}
 # variantes que reutilizan el modelo de otra arma
 SOURCE = {"AC_GarrasCarniceroL": "AC_GarrasCarnicero"}
 TARGET_LENGTH["AC_GarrasCarniceroL"] = 0.38
@@ -84,7 +89,14 @@ def export(name):
     # art/ está en convención de modelado (largo sobre +X): rotar 90° en Z (X->Y) y escalar
     length = obj.dimensions.x
     k = TARGET_LENGTH[name] / length
-    obj.data.transform(AXIS.get(name, Matrix.Rotation(math.radians(90), 4, "Z")) @ Matrix.Scale(k, 4))
+    axis = AXIS.get(name, Matrix.Rotation(math.radians(90), 4, "Z"))
+    if base in MODEL_CENTER:   # centrar el guante en el puño
+        obj.data.transform(Matrix.Translation(-Vector(MODEL_CENTER[base])))
+    obj.data.transform(axis @ Matrix.Scale(k, 4))
+    if name in FIST_CENTER:
+        obj.data.transform(Matrix.Translation(FIST_CENTER[name]))
+    if axis.determinant() < 0:   # espejado: dar vuelta las caras para que las normales miren afuera
+        obj.data.flip_normals()
     obj.matrix_world = Matrix.Identity(4)
     for ax in "xyz":
         lo = min(getattr(v.co, ax) for v in obj.data.vertices)

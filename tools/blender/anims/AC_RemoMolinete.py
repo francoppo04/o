@@ -1,50 +1,54 @@
-"""Remo Destripador: "Molinete" — dos remadas diagonales seguidas.
+"""Remo Destripador: "Molinete" — dos tajos cruzados en X con las dos palas.
 
-1) levanta la pala delantera sobre el hombro derecho, 2) remada hacia adelante-derecha con la sierra
-delantera (golpe 1), 3) gira el remo sobre las manos, 4) remada hacia adelante-izquierda con la
-sierra trasera (golpe 2), 5) vuelve a la guardia. 33 frames a 30 fps (~1,1 s).
-
-Uso: python3 tools/blender/anims/AC_RemoMolinete.py [--preview]
+Guardia de bate -> carga sobre el hombro derecho -> tajo diagonal con la pala delantera (golpe 1)
+-> el remo pasa por arriba del hombro izquierdo -> tajo diagonal inverso con la pala trasera (golpe 2)
+-> vuelve a la guardia. Las manos se separan sobre el mango como en un kayak.
+36 frames a 30 fps (1,2 s). Uso: python3 tools/blender/anims/AC_RemoMolinete.py [--preview]
 """
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import animlib as al  # noqa: E402
+import animkit as ak  # noqa: E402
 
 NAME = "Bob_AC_RemoMolinete"
 WEAPON = "AC_RemoDestripador"
-HITS = (13, 25)   # frames de impacto (para los eventos del AnimSet)
+FRAMES = 36
+HITS = (11, 24)
+BASE = "Bob_IdleAimBat"
+GRIP = "bat"
 
-# frame: (agarre cm, dirección del mango hacia la pala delantera, hacia dónde mira la cara de la pala)
-KEYS = {
-    1:  ((-8, -20, 55), (0.45, -0.35, 0.80), (0, -1, 0)),     # guardia: pala delantera arriba-izquierda
-    8:  ((-12, -10, 63), (-0.40, 0.25, 0.90), (0, -1, 0)),    # carga sobre el hombro derecho
-    13: ((-8, -22, 56), (-0.35, -0.80, -0.15), (0, 0, 1)),   # GOLPE 1: adelante-derecha
-    19: ((-2, -26, 60), (0.30, -0.20, 0.95), (-1, 0, 0)),     # giro: la pala trasera baja
-    25: ((4, -22, 56), (-0.40, 0.80, 0.30), (0, 0, 1)),       # GOLPE 2: pala trasera adelante-izquierda
-    33: ((-8, -20, 55), (0.45, -0.35, 0.80), (0, -1, 0)),     # vuelve a la guardia
+
+def _tip(g, d, back=False):
+    from mathutils import Vector
+    d = Vector(d).normalized()
+    return tuple(Vector(g) + d * 45)
+
+
+# (agarre, punta = hacia la pala delantera, cara del filo; None = la que lleva la trayectoria)
+WEAPON_KEYS = {
+    1: "guard",
+    6: ((-15, 0, 88), _tip((-15, 0, 88), (-0.3, 0.7, 0.65)), None),        # carga sobre el hombro der.
+    11: ((0, -27, 66), _tip((0, -27, 66), (0.45, -0.72, -0.52)), None),    # GOLPE 1: pala delantera abajo-izq.
+    15: ((10, -19, 60), _tip((10, -19, 60), (0.82, -0.2, -0.53)), None),   # sigue de largo
+    19: ((4, -14, 84), _tip((4, -14, 84), (-0.42, -0.3, -0.85)), None),    # vuelta: la pala trasera sube por la izq.
+    24: ((-4, -27, 66), _tip((-4, -27, 66), (0.42, 0.72, 0.55)), "back"),  # GOLPE 2: pala trasera abajo-der.
+    28: ((-13, -18, 60), _tip((-13, -18, 60), (0.8, 0.22, 0.56)), "back"),
+    36: "guard",
 }
-LEFT = {13: -14.0}   # en el golpe 1 la mano izquierda se desliza detrás de la derecha
-BODY = {  # frame: (cadera, torso, inclinación)
-    1: (0, 0, 5), 8: (-15, -30, 0), 13: (15, 25, 15), 19: (0, 0, 5), 25: (-15, -25, 15), 33: (0, 0, 5),
+EASE = {1: "io", 6: "in", 11: "out", 15: "io", 19: "in", 24: "out", 28: "io"}
+LEFT = {1: 0.0, 6: 4.0, 11: 24.0, 15: 24.0, 19: 10.0, 24: 24.0, 28: 24.0, 33: 4.0, 36: 0.0}   # cm de la mano izquierda sobre el mango
+BODY = {
+    1: {},
+    6: {"twist": -20, "hips_yaw": -10, "lean": -4, "crouch": -1},
+    11: {"twist": 55, "hips_yaw": 30, "lean": 16, "crouch": 5, "shift": (2, -4, 0)},
+    15: {"twist": 65, "hips_yaw": 34, "lean": 12, "crouch": 4, "shift": (2, -4, 0)},
+    19: {"twist": 35, "hips_yaw": 18, "lean": 2, "crouch": 0},
+    24: {"twist": -15, "hips_yaw": -5, "lean": 16, "crouch": 5, "shift": (-1, -4, 0)},
+    28: {"twist": -25, "hips_yaw": -10, "lean": 12, "crouch": 4, "shift": (-1, -3, 0)},
+    36: {},
 }
-
-
-def build():
-    rig = al.load_rig()
-    an = al.Animator(rig, NAME, left_hand=16.0)
-    for f, (grip, along, head) in KEYS.items():
-        hips, chest, lean = BODY[f]
-        an.body(f, hips=hips, chest=chest, lean=lean)
-        an.weapon(f, grip, along, head, left=LEFT.get(f))
-    return rig, an.finish(1, 33)
-
+FEET = {1: {}, 11: {"R": (0, 0, 1, 18)}, 19: {}, 24: {"L": (0, 0, 1, -15)}, 30: {}, 36: {}}
 
 if __name__ == "__main__":
-    rig, action = build()
-    out = al.ROOT / "art" / "anims"
-    al.export_glb(rig, action, out / f"{NAME}.glb")
-    if "--preview" in sys.argv:
-        al.attach_weapon(rig, WEAPON)
-        al.render_preview(rig, list(range(1, 34, 2)), out / f"{NAME}_sheet.png", gif=out / f"{NAME}.gif")
+    ak.build(sys.modules[__name__], preview="--preview" in sys.argv)
