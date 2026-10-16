@@ -7,7 +7,13 @@ PASA   cuerpo
 PASA   agarre
 PASA   rotacion
 PASA   pies
-PASA   articulaciones
+FALLA  articulaciones: 106 problemas en 106 muestras (frames 5.38–18.5); peor: frame 10.25: codo L doblado al revés: 179° fuera de la bisagra vanilla (flexión 55°)
+         frame   5.38: codo L doblado al revés: 46° fuera de la bisagra vanilla (flexión 47°)
+         frame    5.5: codo L doblado al revés: 52° fuera de la bisagra vanilla (flexión 52°)
+         frame   5.62: codo L doblado al revés: 58° fuera de la bisagra vanilla (flexión 54°)
+         frame   5.75: codo L doblado al revés: 65° fuera de la bisagra vanilla (flexión 56°)
+         frame   5.88: codo L doblado al revés: 71° fuera de la bisagra vanilla (flexión 55°)
+         frame    6.0: codo L doblado al revés: 77° fuera de la bisagra vanilla (flexión 54°)
 PASA   timing
 
-RESULTADO: PASA
+RESULTADO: FALLA

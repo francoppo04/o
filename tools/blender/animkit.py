@@ -172,6 +172,18 @@ class Body:
         self.grip_l = P["Bip01_Prop1"].inverted() @ P["Bip01_L_Hand"]
         self.guard = P["Bip01_Prop1"].copy()
         self.guard_pose = P
+        # eje de bisagra de codos y rodillas en los ejes locales de cada hueso (de una pose vanilla
+        # con las articulaciones dobladas): normal del plano (codo - hombro) x (muñeca - codo)
+        self.hinge_local = {}
+        Hp = al.x_pose(vanilla("Bob_AttackBat01_Hit"), 9)
+        for s_ in "RL":
+            for up, lo, end in ((f"Bip01_{s_}_UpperArm", f"Bip01_{s_}_Forearm", f"Bip01_{s_}_Hand"),
+                                (f"Bip01_{s_}_Thigh", f"Bip01_{s_}_Calf", f"Bip01_{s_}_Foot")):
+                Sx, Ex, Tx = (Hp[b].translation for b in (up, lo, end))
+                n = (Ex - Sx).cross(Tx - Ex)
+                if n.length > 1e-3 and math.degrees((Ex - Sx).angle(Tx - Ex)) > 5:
+                    self.hinge_local[up] = {up: (Hp[up].to_3x3().inverted() @ n).normalized(),
+                                            lo: (Hp[lo].to_3x3().inverted() @ n).normalized()}
         if grip in ("1h", "fists"):   # mano izquierda libre: su relación con Prop2
             self.grip_l = P["Bip01_Prop2"].inverted() @ P["Bip01_L_Hand"]
         # puño en el espacio de cada prop (para los guantes), con los dedos de la pose vanilla
@@ -229,13 +241,28 @@ class Body:
         p = p.normalized() if p.length > 1e-6 else Vector((0, 0, 1))
         E = S + u * x + p * h
         T = S + u * d
+        # orientación de los dos huesos a partir del plano de flexión: el eje de bisagra local (medido
+        # en la pose vanilla) se alinea con la normal del plano hombro-codo-muñeca. Así el codo o la
+        # rodilla no pueden doblarse al revés aunque el giro del hueso en la base sea otro.
+        n_w = (E - S).cross(T - E)
+        hinge = self.hinge_local.get(up)
         for bone, head, tip, r, r_next in ((up, S, E, r_up, r_lo), (lo, E, T, r_lo, r_end)):
             cur = self.M(bone)
-            # gira el hueso desde su orientación actual para apuntar al siguiente: conserva el giro (roll)
-            cur_dir = (self.M(chain[chain.index(bone) + 1]).translation - cur.translation)
-            q = cur_dir.rotation_difference(tip - head)
-            # corrige el roll para que el plano del codo/rodilla mire al polo
-            m = q.to_matrix().to_4x4() @ Matrix.Translation(-cur.translation) @ cur
+            if hinge is not None and n_w.length > 1e-6:
+                x_l = (r.inverted() @ r_next.translation).normalized()
+                n_l = hinge[bone]
+                n_l = (n_l - x_l * n_l.dot(x_l)).normalized()
+                x_w = (tip - head).normalized()
+                nw = n_w.normalized()
+                nw = (nw - x_w * nw.dot(x_w)).normalized()
+                L = Matrix((x_l, n_l.cross(x_l), n_l)).transposed()
+                W = Matrix((x_w, nw.cross(x_w), nw)).transposed()
+                m = (W @ L.transposed()).to_4x4()
+            else:
+                # sin bisagra medida: rotación mínima desde la orientación actual
+                cur_dir = (self.M(chain[chain.index(bone) + 1]).translation - cur.translation)
+                q = cur_dir.rotation_difference(tip - head)
+                m = q.to_matrix().to_4x4() @ Matrix.Translation(-cur.translation) @ cur
             m.translation = head
             self._set(bone, m)
         if end_m is not None:

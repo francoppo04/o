@@ -49,7 +49,10 @@ SUB = 4                 # muestras por frame
 CONTACT = 0.5           # u (1 cm)
 CLEARANCE = 1.5         # u (3 cm)
 GRIP_TOL = 0.5          # u (1 cm)
-GRIP_EXCLUDE = 8.0      # u: tramo del mango dentro del puño que no cuenta para "cuerpo"
+GRIP_EXCLUDE = 8.0      # u: alrededor de cada agarre no cuentan las muñecas/antebrazos (solo esas partes)
+EDGE_STEP = 1.0         # u: muestreo del arma sobre sus aristas
+HINGE_TOL = 45.0        # grados: el plano de flexión de codo/rodilla no se aparta más que esto de la bisagra vanilla
+WRIST = ("L_Forearm", "R_Forearm")
 MAX_STEP = 20.0         # grados por muestra (1/4 de frame)
 FOOT_SLIDE = 0.5        # u
 FLOOR_TOL = 0.5         # u
@@ -211,6 +214,11 @@ class Scene:
                         for v in self.body.data.vertices]
         P = al.x_pose(ak.vanilla(ak.GRIP_REF[spec.GRIP][0]), ak.GRIP_REF[spec.GRIP][1])
         self.guard = P
+        self.hinge = {}
+        for s_ in "RL":
+            for up, lo, end in ((f"Bip01_{s_}_UpperArm", f"Bip01_{s_}_Forearm", f"Bip01_{s_}_Hand"),
+                                (f"Bip01_{s_}_Thigh", f"Bip01_{s_}_Calf", f"Bip01_{s_}_Foot")):
+                self.hinge[up] = hinge_normal(P, up, lo, end)
         self.grip_r = P["Bip01_Prop1"].inverted() @ P["Bip01_R_Hand"]
         self.grip_l = P["Bip01_Prop1"].inverted() @ P["Bip01_L_Hand"]
 
@@ -241,8 +249,18 @@ class Scene:
         return BVHTree.FromPolygons(verts, polys), zmin
 
     def weapon_verts(self):
+        """Puntos del arma: vértices + puntos sobre cada arista cada <= EDGE_STEP u (el mango tiene
+        tramos de hasta 17 u sin vértices: un torso o el objetivo podían quedar entre dos)."""
+        if not hasattr(self, "_wlocal"):
+            me = self.weapon.data
+            pts = [v.co.copy() for v in me.vertices]
+            for e in me.edges:
+                a, b = me.vertices[e.vertices[0]].co, me.vertices[e.vertices[1]].co
+                n = int((a - b).length / EDGE_STEP)
+                pts += [a.lerp(b, k / (n + 1)) for k in range(1, n + 1)]
+            self._wlocal = pts
         m = self.inv @ self.weapon.matrix_world
-        return [(m @ v.co, v.co.z) for v in self.weapon.data.vertices]   # co.z = a lo largo del mango
+        return [(m @ v, v.z) for v in self._wlocal]   # v.z = a lo largo del mango
 
 
 # ---------------------------------------------------------------- criterios
@@ -250,6 +268,15 @@ def _angle(a, b):
     """Ángulo geométrico entre dos orientaciones (q y -q son la misma: 358° = 2°)."""
     ang = math.degrees(a.to_quaternion().rotation_difference(b.to_quaternion()).angle)
     return min(ang, 360 - ang)
+
+
+def hinge_normal(P, up, lo, end):
+    """Normal del plano de flexión en los ejes locales del hueso superior (brazo o muslo)."""
+    S, E, T = (P[b].translation for b in (up, lo, end))
+    n = (E - S).cross(T - E)
+    if n.length < 1e-6:
+        return None
+    return (P[up].to_3x3().inverted() @ n).normalized()
 
 
 def _inside(bt, p):
@@ -328,16 +355,18 @@ def validate(spec, glb=None):
         # cuerpo
         worst_c = (1e9, None, "")
         for p, z in wv:
-            if any((p - g).length < GRIP_EXCLUDE for g in grips):
-                continue
-            loc, nrm, _, dist = bt.find_nearest(p)
+            loc, nrm, idx, dist = bt.find_nearest(p)
             if loc is None:
                 continue
-            if dist > CLEARANCE and dist >= worst_c[0]:
-                continue
-            d = -dist if dist < 15 and _inside(bt, p) else dist     # dentro de la malla = negativo
+            bone = sc.poly_bone[idx]
+            if bone in WRIST and any((p - g).length < GRIP_EXCLUDE for g in grips):
+                continue       # el mango dentro del puño toca la muñeca: no cuenta
+            if dist >= 15:
+                d = dist       # a más de 15 u de la superficie no puede estar adentro (el torso tiene ~20 u)
+            else:
+                d = -dist if _inside(bt, p) else dist     # dentro de la malla = negativo
             if d < worst_c[0]:
-                worst_c = (d, z, sc.poly_bone[idx] if (idx := bt.find_nearest(p)[2]) is not None else "?")
+                worst_c = (d, z, bone)
         if worst_c[0] < CLEARANCE:
             part = "pala trasera" if worst_c[1] is not None and worst_c[1] < 0 else "pala delantera/mango"
             note("cuerpo", f, worst_c[0], f"{part} a {worst_c[0]:+.1f} u del cuerpo ({worst_c[2]})")
@@ -394,6 +423,15 @@ def validate(spec, glb=None):
             elbow = math.degrees((el - sh).angle(wr - el))
             if elbow > 155:
                 note("articulaciones", f, elbow, f"codo {s} {elbow:.0f}°")
+            # sentido: con el codo/rodilla doblado (> 15°) el plano de flexión tiene que ser el vanilla
+            cur = {b.name: b.matrix for b in sc.pb if b.name.startswith("Bip01")}
+            for up, lo, end, name, flex in ((f"Bip01_{s}_UpperArm", f"Bip01_{s}_Forearm", f"Bip01_{s}_Hand", "codo", elbow),
+                                            (f"Bip01_{s}_Thigh", f"Bip01_{s}_Calf", f"Bip01_{s}_Foot", "rodilla", knee)):
+                ref, nn = sc.hinge.get(up), hinge_normal(cur, up, lo, end)
+                if ref is not None and nn is not None and flex > 15:
+                    dev = math.degrees(ref.angle(nn))
+                    if dev > HINGE_TOL:
+                        note("articulaciones", f, dev, f"{name} {s} doblado al revés: {dev:.0f}° fuera de la bisagra vanilla (flexión {flex:.0f}°)")
     # timing
     if not hits_pc:
         note("timing", 0, 0, "el AnimSet no tiene AttackCollisionCheck")
