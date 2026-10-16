@@ -1,5 +1,6 @@
-"""AT_G19: pistola compacta tipo Glock 19 (9 mm). Escala del juego (M9 vanilla de referencia).
-Uso: python3 tools/blender/guns/AT_G19.py"""
+"""AT_G19: pistola G-19 (5.ª gen.) calcada de la foto de referencia (guns/siluetas/AT_G19.json, misma foto que
+AT_M4). Escala de pistola: el largo como la versión anterior (~0,16 m, boca a ~0,125).
+Uso: python3 tools/blender/guns/AT_G19.py [--preview]"""
 import sys
 from pathlib import Path
 
@@ -8,32 +9,67 @@ import pzlib as pz  # noqa: E402
 import gunkit as gk  # noqa: E402
 
 ID = "AT_G19"
+P = gk.Photo(ID, origin_px=(165, 330), origin=(0.0, 0.0), scale=0.00072, soften=2.0)
+BY = 305
+BORE = P.pt(200, BY)[1]
 
 
-def build():
+def X(px):
+    return P.X(px, BY)
+
+
+def build(preview=False):
     pz.reset()
     m, p = gk.black_metal(), gk.polymer()
-    dark = gk.accent("oscuro", (0.02, 0.02, 0.022))
-    parts = [
-        gk.bx("corredera", -0.038, 0.118, -0.0115, 0.0115, 0.012, 0.037, m, bevel=0.0025),
-        gk.bx("ventana", 0.010, 0.046, -0.0118, -0.0105, 0.024, 0.036, dark, bevel=0.0),
-        gk.tube("boca", 0.110, 0.1195, 0.0052, dark, z=0.026, segs=10),
-        gk.bx("estrias", -0.034, -0.012, -0.0118, 0.0118, 0.016, 0.034, dark, bevel=0.0),
-        gk.bx("armazon", -0.034, 0.112, -0.0105, 0.0105, 0.000, 0.013, p, bevel=0.002),
-        gk.bx("alza", -0.030, -0.022, -0.006, 0.006, 0.037, 0.042, m, bevel=0.0),
-        gk.bx("punto", 0.104, 0.110, -0.0025, 0.0025, 0.037, 0.041, m, bevel=0.0),
-        gk.side("empunadura", [(-0.034, 0.002), (0.010, 0.002), (-0.004, -0.074), (-0.014, -0.080), (-0.046, -0.074)], 0.027, p),
-        gk.side("base", [(-0.046, -0.073), (-0.003, -0.073), (-0.004, -0.082), (-0.047, -0.081)], 0.028, dark),
-        gk.side("guardamonte", [(0.006, 0.0), (0.050, 0.0), (0.046, -0.022), (0.010, -0.022), (0.010, -0.016), (0.040, -0.016), (0.042, -0.004), (0.010, -0.004)], 0.008, p),
-        gk.bx("cola", 0.018, 0.022, -0.002, 0.002, -0.014, 0.0, m, bevel=0.0),
-    ]
-    parts += gk.rail("riel", 0.060, 0.108, -0.004, p, w=0.016, h=0.005)
-    obj = pz.finish(ID, parts, tex_size=256, ao=True)
+    dark = gk.accent("oscuro", (0.018, 0.018, 0.02))
+    parts = []
+
+    # --- corredera con estrías, ventana de expulsión, miras
+    slide = P.cut((118, 285, 340, 320))
+    parts += gk.slab("corredera", slide, 0.0215, m, bevel=0.0018, segs=3)
+    for i in range(8):
+        x = 128 + i * 6
+        parts += gk.decal(f"estria_t{i}", P.poly((x, 293, x + 2.6, 317)), 0.0109, dark)
+    for i in range(7):
+        x = 288 + i * 6.5
+        parts += gk.decal(f"estria_d{i}", P.poly((x, 293, x + 2.6, 317)), 0.0109, dark)
+    parts += gk.slab("ventana", P.poly((228, 287, 268, 291)), 0.017, gk.accent("canon", (0.12, 0.12, 0.13)),
+                     bevel=0.0004)
+    parts += gk.slab("alza", P.poly((128, 282, 142, 292)), 0.012, m, bevel=0.0006)
+    parts += gk.slab("punto", P.poly((322, 283, 329, 292)), 0.004, m, bevel=0.0003)
+    front = slide.bounds[2]
+    parts.append(gk.tube("boca", front - 0.003, front + 0.0004, P.L(6), dark, z=BORE, segs=14))
+    parts += gk.decal("marcas", P.poly((210, 300, 280, 305)), -0.011, gk.accent("grabado", (0.16, 0.16, 0.17)),
+                      depth=0.0012, both=False)
+
+    # --- armazón con guardamonte calado, riel, cola con seguro, palancas
+    hole = P.poly([(200, 336), (257, 336), (259, 352), (252, 364), (206, 364)])
+    frame = P.cut([(116, 318), (337, 318), (337, 337), (268, 337), (268, 376), (190, 376), (184, 339),
+                   (116, 339)]).difference(hole)
+    parts += gk.slab("armazon", frame, 0.0225, p, bevel=0.0015, segs=3)
+    parts += gk.decal("riel", P.poly((282, 330, 326, 333)), 0.0114, dark)
+    parts += gk.slab("cola", P.poly([(220, 330), (230, 330), (233, 358), (226, 361)]), 0.0055, p, bevel=0.0006)
+    parts += gk.slab("seguro", P.poly([(223, 336), (228, 336), (229, 350), (225, 351)]), 0.0065, dark, bevel=0.0)
+    parts += gk.decal("retenida", P.poly((188, 321, 214, 325)), -0.0118, m, depth=0.0015, both=False)
+    parts += gk.decal("desarme", P.poly((236, 321, 246, 327)), 0.0118, m, depth=0.0015)
+
+    # --- empuñadura texturada y base del cargador
+    # contorno a mano (el calco de la foto sale serruchado): ~16° de inclinación como la G19
+    grip = P.poly([(115, 319), (190, 319), (190, 337), (186, 345), (158, 424), (98, 424), (101, 405), (111, 370),
+                   (119, 341), (113, 328)])
+    parts += gk.slab("empunadura", grip, 0.0245, p, bevel=0.0035, segs=3)
+    parts += gk.panel("textura", grip.intersection(P.poly((80, 342, 200, 408))), 0.0245, gk.rubber(),
+                      inset=0.0035)
+    parts += gk.slab("base", P.poly([(96, 421), (160, 421), (158, 440), (94, 440)]), 0.0255, dark, bevel=0.002, segs=3)
+
+    obj = gk.finish_gun(ID, parts, tex_size=512)
+    if preview:
+        gk.preview(obj, pz.ART / ID / "preview.png")
     gk.export(obj, ID, "handgun", {
-        "muzzle": (0.120, 0, 0.026),
-        "at_light": (0.084, 0, -0.004),
+        "muzzle": (front, 0, BORE),
+        "at_light": (X(312), 0, P.pt(300, 337)[1] - 0.001),
     })
 
 
 if __name__ == "__main__":
-    build()
+    build("--preview" in sys.argv)

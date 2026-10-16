@@ -2,9 +2,9 @@
  "kind": "rifle",
  "attachments": {},
  "center": [
-  -0.0023,
-  0.003,
+  -0.0028,
+  -0.002,
   0.024
  ],
- "length": 0.038
+ "length": 0.052
 }

@@ -1,5 +1,7 @@
-"""AT_AK101: AK corta en 5.56 (tipo AK-101/105): culata plegable triangular, guardamanos negro,
-riel lateral para mira, freno de boca y cargador curvo. Escala del juego. Uso: python3 tools/blender/guns/AT_AK101.py"""
+"""AT_AK101: AK-101 con culata plegable triangular, montura lateral con riel para mira y freno de boca,
+calcada de la foto de referencia (guns/siluetas/AT_AK101.json; en esa foto la boca apunta a la izquierda,
+por eso flip=True). Misma foto y escala que AT_M4.
+Uso: python3 tools/blender/guns/AT_AK101.py [--preview]"""
 import sys
 from pathlib import Path
 
@@ -8,44 +10,103 @@ import pzlib as pz  # noqa: E402
 import gunkit as gk  # noqa: E402
 
 ID = "AT_AK101"
+P_BORE = ((85, 524), (460, 524))     # dos puntos del eje del cañón en la foto
+P = gk.Photo(ID, origin_px=(726, 541), origin=(0.006, 0.0), bore_px=P_BORE, scale=0.000504,
+             flip=True)
+BY = 524
+BORE = P.pt(400, BY)[1]
 
 
-def build():
+def X(px):
+    return P.X(px, BY)
+
+
+def Z(py):
+    return P.pt(400, py)[1]
+
+
+def magazine(P):
+    """Cargador curvo de polímero con nervio perimetral (píxeles de la foto; lo usa también parts.py)."""
+    p, dark = gk.polymer(), gk.accent("oscuro", (0.018, 0.018, 0.02))
+    mag = P.cut([(500, 538), (597, 538), (592, 620), (568, 775), (430, 775), (430, 700)])
+    parts = gk.slab("cargador", mag, 0.022, p, bevel=0.0025, segs=3)
+    parts += gk.decal("nervio_cargador", mag.buffer(-0.0035, join_style=2).difference(mag.buffer(-0.0048,
+                                                                                            join_style=2)),
+                      0.0111, dark, depth=0.0006)
+    return parts
+
+
+def build(preview=False):
     pz.reset()
     m, p = gk.black_metal(), gk.polymer()
-    dark = gk.accent("oscuro", (0.02, 0.02, 0.022))
-    parts = [
-        gk.bx("cajon", -0.050, 0.100, -0.0125, 0.0125, -0.002, 0.036, m),
-        gk.tube("tapa", -0.050, 0.098, 0.0125, m, z=0.034, segs=12),
-        gk.bx("selector", -0.010, 0.060, -0.0135, -0.0125, 0.012, 0.020, dark, bevel=0.0),
-        # montura lateral + plataforma de mira arriba del cajón
-        gk.bx("montura", -0.004, 0.064, 0.0125, 0.020, 0.008, 0.040, m),
-        gk.bx("puente", -0.004, 0.064, -0.006, 0.020, 0.040, 0.052, m),
-        # guardamanos inferior, tubo de gases y guardamanos superior
-        gk.bx("guardamanos", 0.100, 0.205, -0.0155, 0.0155, -0.002, 0.030, p, bevel=0.004),
-        gk.tube("tubo_gases", 0.100, 0.230, 0.0065, m, z=0.046, segs=10),
-        gk.tube("guarda_sup", 0.100, 0.190, 0.0105, p, z=0.044, segs=10),
-        gk.tube("canon", 0.205, 0.268, 0.0058, m, z=0.020),
-        gk.bx("bloque_gas", 0.222, 0.236, -0.008, 0.008, 0.012, 0.050, m),
-        gk.bx("mira_del", 0.244, 0.256, -0.007, 0.007, 0.010, 0.050, m),
-        gk.tube("freno", 0.262, 0.298, 0.0092, m, z=0.020, segs=8),
-        # culata plegable triangular
-        gk.bar("culata_sup", (-0.168, 0.034), (-0.050, 0.032), 0.007, m, width=0.010),
-        gk.bar("culata_inf", (-0.168, -0.028), (-0.050, 0.002), 0.007, m, width=0.010),
-        gk.bx("culata_pie", -0.176, -0.164, -0.012, 0.012, -0.034, 0.040, m),
-        gk.side("empunadura", [(-0.010, 0.000), (0.018, 0.000), (0.002, -0.064), (-0.014, -0.068), (-0.032, -0.060)], 0.024, p),
-        gk.bx("guardamonte", -0.004, 0.040, -0.004, 0.004, -0.014, -0.009, m),
-        gk.mag_curve("cargador", 0.044, 0.078, 0.110, 0.042, p, thickness=0.022, rake=0.004),
-        gk.bx("palanca", 0.070, 0.085, -0.019, -0.0125, 0.022, 0.030, m),
-    ]
-    parts += gk.rail("riel_inf", 0.130, 0.200, -0.008, m, w=0.018)
-    obj = pz.finish(ID, parts, tex_size=512, ao=True)
+    dark = gk.accent("oscuro", (0.018, 0.018, 0.02))
+    parts = []
+
+    # --- freno de boca, tubo, base del alza delantera con poste, cañón, tubo de gases, baqueta
+    parts.append(gk.lathe_x("freno", [(X(100), P.L(13)), (X(92), P.L(16)), (X(76), P.L(17)), (X(70), P.L(15)),
+                                      (X(70), P.L(6))], m, z=BORE, segs=20))
+    for i in range(3):
+        xa = X(96) + i * 0.0035
+        parts += gk.decal(f"puerto{i}", gk.rect(xa, BORE - P.L(9), xa + 0.0018, BORE + P.L(9)), P.L(15.5), dark)
+    parts.append(gk.tube("manguito", X(155), X(100), P.L(16), m, z=BORE, segs=20))
+    parts += gk.slab("base_alza", P.cut([(155, 470), (196, 470), (198, 547), (155, 547)]), 0.020, m, bevel=0.0015)
+    parts += gk.slab("orejas", P.poly([(156, 452), (176, 452), (178, 472), (156, 472)]), 0.014, m, bevel=0.001)
+    parts += gk.slab("poste", P.poly([(163, 446), (169, 446), (169, 460), (163, 460)]), 0.003, m, bevel=0.0)
+    parts.append(gk.tube("canon", X(272), X(195), P.L(12), m, z=BORE, segs=20))
+    parts.append(gk.tube("tubo_gases", X(275), X(196), P.L(13), m, z=Z(486), segs=18))
+    parts.append(gk.tube("bloque_gas", X(215), X(196), P.L(17), m, z=Z(486), segs=18))
+    parts.append(gk.tube("baqueta", X(420), X(158), P.L(3), m, z=Z(546), segs=8))
+
+    # --- guardamanos: tapa del tubo de gases redondeada arriba, guardamanos inferior con ventilación
+    parts.append(gk.lathe_x("guarda_sup", [(X(472), P.L(18)), (X(472), P.L(24)), (X(406), P.L(24)),
+                                           (X(400), P.L(22)), (X(276), P.L(22)), (X(270), P.L(18))], p,
+                            z=Z(482), segs=22))
+    lo = P.cut([(268, 503), (472, 503), (472, 548), (440, 556), (395, 556), (380, 547), (268, 547)])
+    parts += gk.slab("guarda_inf", lo, 0.030, p, bevel=0.004, segs=3)
+    for i in range(4):
+        x = 292 + i * 11
+        parts += gk.decal(f"vent{i}", P.poly((x, 510, x + 5, 540)), 0.0151, dark)
+    for i, x in enumerate((345, 372)):
+        parts += gk.decal(f"nervio{i}", P.poly((x, 506, x + 3, 545)), 0.0152, m, depth=0.001)
+
+    # --- cajón con tapa redondeada, remaches, selector, montura lateral con riel
+    parts += gk.slab("cajon", P.cut((468, 462, 786, 542)), 0.024, m, bevel=0.0015)
+    parts += gk.slab("tapa", P.cut((476, 452, 770, 474)), 0.025, m, bevel=0.006, segs=4)
+    parts += gk.slab("munon", P.cut((466, 470, 500, 545)), 0.026, m, bevel=0.0015)
+    for i, (x, y) in enumerate(((480, 520), (490, 532), (742, 528), (754, 528), (548, 532), (560, 532))):
+        parts += gk.decal(f"remache{i}", gk.circle(*P.pt(x, y), P.L(3.5), n=10), 0.0123, gk.accent("remache", (0.2, 0.2, 0.21)),
+                          depth=0.0012)
+    parts += gk.slab("selector", P.poly([(550, 478), (712, 482), (712, 492), (560, 492)]), 0.003, m, y=-0.0133,
+                     bevel=0.0005)
+    parts += gk.slab("montura", P.cut((598, 455, 700, 536)), 0.006, m, y=0.0145, bevel=0.0012)
+    parts += gk.slab("puente", P.poly((596, 440, 702, 456)), 0.030, m, bevel=0.0012)
+    zt = Z(440)
+    parts += gk.rail("riel", X(700), X(598), zt, m)
+
+    # --- guardamonte, cola, empuñadura texturada
+    hole = P.poly([(606, 542), (670, 542), (672, 572), (610, 573)])
+    parts += gk.slab("guardamonte", P.poly([(596, 538), (680, 538), (682, 581), (600, 581)]).difference(hole),
+                     0.009, m, bevel=0.001)
+    parts += gk.slab("cola", P.poly([(646, 543), (655, 543), (659, 566), (651, 568)]), 0.004, m, bevel=0.0006)
+    grip = P.cut([(672, 538), (786, 528), (786, 640), (776, 662), (705, 668), (672, 560)])
+    parts += gk.slab("empunadura", grip, 0.024, p, bevel=0.0035, segs=3)
+    parts += gk.panel("textura", grip.intersection(P.poly((690, 560, 790, 650))), 0.024, gk.rubber(), inset=0.004)
+
+    # --- cargador curvo con nervios y culata plegable triangular
+    parts += magazine(P)
+    parts += gk.slab("bisagra", P.cut((752, 484, 792, 546)), 0.026, m, bevel=0.0015)
+    parts += gk.slab("culata", P.cut((786, 484, 1032, 630)), 0.012, m, bevel=0.0012)
+    parts += gk.slab("cantonera", P.cut((1026, 484, 1064, 630)), 0.022, m, bevel=0.002, segs=3)
+
+    obj = gk.finish_gun(ID, parts)
+    if preview:
+        gk.preview(obj, pz.ART / ID / "preview.png")
     gk.export(obj, ID, "rifle", {
-        "muzzle": (0.298, 0, 0.020),
-        "at_optic": (0.030, 0.007, 0.052),
-        "at_light": (0.165, 0, -0.008),
+        "muzzle": (X(70), 0, BORE),
+        "at_optic": (X(650), 0, zt + 0.006),
+        "at_light": (0.228, 0, Z(552) - 0.002),
     })
 
 
 if __name__ == "__main__":
-    build()
+    build("--preview" in sys.argv)

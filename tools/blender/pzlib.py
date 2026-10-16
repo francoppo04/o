@@ -326,7 +326,7 @@ def finish(name, parts, tex_size=256, ao=True, export=True):
     bpy.ops.mesh.select_all(action="SELECT")
     bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=0.02, area_weight=0.0,
                              correct_aspect=True, scale_to_bounds=False)
-    bpy.ops.uv.pack_islands(margin=0.01, rotate=True)
+    bpy.ops.uv.pack_islands(margin=0.004 if tex_size >= 1024 else 0.01, rotate=True)
     bpy.ops.object.mode_set(mode="OBJECT")
 
     sc = bpy.context.scene
