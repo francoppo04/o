@@ -347,3 +347,17 @@ def _from_concept():
 
 
 _from_concept()
+
+
+def _load_fixes():
+    """Fichas corregidas a mano (hd_fix/<ID>.py, creadas con hd_dump.py): reemplazan la ficha entera."""
+    import importlib.util
+    from pathlib import Path
+    for f in sorted((Path(__file__).resolve().parent / "hd_fix").glob("AT_*.py")):
+        spec = importlib.util.spec_from_file_location(f"hd_fix_{f.stem}", f)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        SPEC[f.stem] = mod.SPEC
+
+
+_load_fixes()
