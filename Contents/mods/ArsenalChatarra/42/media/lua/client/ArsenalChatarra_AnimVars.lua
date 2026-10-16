@@ -4,7 +4,6 @@
 
 local ANIM = {
     ["ArsenalChatarra.AC_RemoDestripador"] = "remo",
-    ["ArsenalChatarra.AC_GarrasCarnicero"] = "garras",
 }
 
 local function update(player)
