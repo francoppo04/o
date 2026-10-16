@@ -6,6 +6,7 @@ animaciones, un modelo rígido no puede calzar en todas.
 
 Uso (Python 3, sin dependencias; no copia archivos del juego, solo imprime números):
   python tools/inspect_hand_prop.py "D:/SteamLibrary/steamapps/common/ProjectZomboid/media/anims_X/Bob" > hand_prop.txt
+  python tools/inspect_hand_prop.py "<carpeta>" "IdleAim1Hand$|WalkAim1Hand$|AttackKnife01_Hit$|Idle1HandExt01|WalkNoAim1Hand$|Idle_Bag$|Walk_Bag$"
 """
 import math
 import re
@@ -106,18 +107,22 @@ def relation(G, side, prop):
     w = apply(inv, [G[f"Bip01_{side}_Hand"][i][3] for i in range(3)])
     f1 = apply(inv, [G[f"Bip01_{side}_Finger1"][i][3] for i in range(3)])
     f0 = apply(inv, [G[f"Bip01_{side}_Finger0"][i][3] for i in range(3)])
+    fo = apply(inv, [G[f"Bip01_{side}_Forearm"][i][3] for i in range(3)])
+    arm = norm([w[i] - fo[i] for i in range(3)])     # antebrazo: codo -> muñeca
     k = norm([f1[i] - w[i] for i in range(3)])
     th = [f0[i] - w[i] for i in range(3)]
     d = norm([k[1] * th[2] - k[2] * th[1], k[2] * th[0] - k[0] * th[2], k[0] * th[1] - k[1] * th[0]])
     if side == "L":
         d = [-x for x in d]
-    return [round(x * 100, 1) for x in w], [round(x, 2) for x in k], [round(x, 2) for x in d]
+    return ([round(x * 100, 1) for x in w], [round(x, 2) for x in k], [round(x, 2) for x in d],
+            [round(x, 2) for x in arm])
 
 
-def main(folder):
-    files = sorted(p for p in Path(folder).iterdir() if p.suffix.lower() == ".x" and PATTERN.search(p.stem))
+def main(folder, only=None):
+    pat = re.compile(only, re.I) if only else PATTERN
+    files = sorted(p for p in Path(folder).iterdir() if p.suffix.lower() == ".x" and pat.search(p.stem))
     print(f"# {len(files)} animaciones en {folder}")
-    print("# clip | frame | lado | muñeca en el prop (cm) | nudillos (eje del prop) | dorso")
+    print("# clip | frame | lado | muñeca en el prop (cm) | nudillos (eje del prop) | dorso | antebrazo")
     for f in files:
         try:
             parents, rest, keys = parse(f)
@@ -130,8 +135,8 @@ def main(folder):
             for side, prop in (("R", "Bip01_Prop1"), ("L", "Bip01_Prop2")):
                 r = relation(G, side, prop)
                 if r:
-                    print(f"{f.stem} | {idx} | {side} | {r[0]} | {r[1]} | {r[2]}")
+                    print(f"{f.stem} | {idx} | {side} | {r[0]} | {r[1]} | {r[2]} | {r[3]}")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else ".")
+    main(sys.argv[1] if len(sys.argv) > 1 else ".", sys.argv[2] if len(sys.argv) > 2 else None)
