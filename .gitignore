@@ -4,3 +4,7 @@ __pycache__/
 art/anims/_frames/
 art/anims/_ref/
 art/*/preview.png
+art/*/verif_*.png
+art/*/*_ao.png
+art/*/*_edge.png
+art/*/*_cav.png

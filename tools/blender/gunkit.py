@@ -164,9 +164,22 @@ def export(obj, ID, kind, attachments, tex=None, icon=True, icon_rot=(0, 0, 0)):
     tmp = bpy.data.objects.new(ID + "_export", me)
     bpy.context.scene.collection.objects.link(tmp)
     M = S @ G
+    custom = None
+    if me.has_custom_normals:          # normales personalizadas (bisel endurecido / weighted normal)
+        cn = me.corner_normals
+        custom = {(p.index, me.loops[li].vertex_index): Vector(cn[li].vector) for p in me.polygons
+                  for li in p.loop_indices}
     me.transform(M)
     if M.determinant() < 0:
         me.flip_normals()
+    if custom is not None:              # rotar/espejar las normales y reasignarlas por (cara, vértice)
+        R = M.to_3x3().inverted().transposed()
+        nrm = []
+        for p in me.polygons:
+            for li in p.loop_indices:
+                n = R @ custom[(p.index, me.loops[li].vertex_index)]
+                nrm.append(n.normalized())
+        me.normals_split_custom_set(nrm)
     MODELS.mkdir(parents=True, exist_ok=True)
     TEXTURES.mkdir(parents=True, exist_ok=True)
     for o in bpy.context.view_layer.objects:

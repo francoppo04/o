@@ -13,22 +13,22 @@ module Base
         texture = weapons/ArsenalTactico/AT_M4,
         attachment muzzle
         {
-            offset = 0.0000 0.3186 0.0340,
+            offset = 0.0000 0.3184 0.0342,
             rotate = -90.0000 0.0000 -180.0000,
         }
         attachment at_optic
         {
-            offset = 0.0000 0.0516 0.0597,
+            offset = 0.0000 0.0515 0.0581,
             rotate = 0.0000 0.0000 0.0000,
         }
         attachment at_light
         {
-            offset = 0.0000 0.2550 0.0089,
+            offset = 0.0000 0.2540 0.0136,
             rotate = 0.0000 0.0000 0.0000,
         }
         attachment world
         {
-            offset = 0.0200 0.0644 0.0000,
+            offset = 0.0200 0.0643 0.0000,
             rotate = 180.0000 0.0000 180.0000,
         }
     }

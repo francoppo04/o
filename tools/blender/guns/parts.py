@@ -129,6 +129,27 @@ def AT_Granada40():
             gk.tube("culote", -0.0008, 0.0002, 0.0050, gk.brass(), segs=16)]
 
 
+def _skull_mag(P):
+    """Cargador STANAG gris con base de calavera, en píxeles de la foto (versión anterior de la M4; la M4 nueva lleva el cargador liso de la foto)."""
+    g = gk.grey("gris_cargador")
+    dark = gk.accent("oscuro", (0.018, 0.018, 0.02))
+    parts = []
+    mag = P.cut([(588, 1000), (712, 1000), (712, 1125), (588, 1125)])
+    body = mag.intersection(P.poly((580, 995, 720, 1102)))
+    parts += gk.slab("cargador", body, 0.020, g, bevel=0.0015, segs=2)
+    for i, (xa, xb) in enumerate(((604, 610), (626, 632))):
+        parts += gk.slab(f"nervio{i}", body.intersection(P.poly([(xa, 1003), (xb, 1003), (xb + 14, 1100),
+                                                                 (xa + 14, 1100)])), 0.0215, g, bevel=0.0005,
+                         segs=1)
+    skull = mag.difference(P.poly((580, 995, 720, 1101))).union(P.poly([(612, 1099), (698, 1099), (702, 1124),
+                                                                         (616, 1127)]))
+    parts += gk.slab("calavera", skull, 0.025, gk.accent("calavera", (0.06, 0.06, 0.065)), bevel=0.002, segs=3)
+    for i, xe in enumerate((637, 670)):
+        parts += gk.decal(f"ojo{i}", gk.circle(*P.pt(xe, 1110), P.L(8), n=12, sz=1.2), 0.0127, dark, depth=0.001)
+    parts += gk.decal("nariz", P.poly([(650, 1116), (658, 1116), (654, 1122)]), 0.0127, dark, depth=0.001)
+    return parts
+
+
 def _mag_photo(gun, origin_px, **kw):
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     mod = __import__(gun)
@@ -137,7 +158,9 @@ def _mag_photo(gun, origin_px, **kw):
 
 
 def AT_SkullMag():
-    return _mag_photo("AT_M4", (650, 1001))
+    P = gk.Photo("AT_M4", origin_px=(650, 1001), origin=(0.0, 0.0), bore_px=((380, 889), (1060, 905)),
+                 scale=0.000504)
+    return _skull_mag(P)
 
 
 def AT_LancerMag():
