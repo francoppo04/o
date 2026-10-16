@@ -195,3 +195,17 @@ evalúe y se haga daño dos veces por golpe (no confirmado: no hay guard visible
    gotmayonase muestra un ejemplo con `attachment Bip01_Prop1`. **Hay que verificarlo in-game** (Debug › Render ›
    primaryHandBone / weaponHitPoint, `ModelSlotDebugRenderData.java:74-78,175`).
 6. Que los .X de `pz_weapon_check` sean idénticos en B42 se infiere por el md5 contra la copia de un mod B42; no está confirmado.
+
+## Decisiones tomadas al corregir el remo (con evidencia propia)
+
+- **Conversión .glb → juego** verificada en `FileTask_LoadAnimation.loadGLTF` / `ImportedSkeleton.processAnimation`
+  (42.21): `MAKE_LEFT_HANDED`, posiciones x0,01 y `local' = R⁻¹·local·R` con R = −90° en X. Emulada en
+  `tools/blender/validate_anim.py` (`GlbAsGame`): el GLB releído da la misma pose que Blender (0,00 u / 0,0°).
+- **Ejes del rig:** rig = F · X · F (F = intercambio Y/Z), medido contra la pose de enlace de los `SkinWeights`
+  de los .X vanilla (28 huesos, < 1°). En Blender el mango del arma va sobre +Z del hueso de prop.
+- **Escala para criterios:** 1 u del rig ≈ 2 cm reales (el personaje mide ~90 u ≈ 1,80 m). *Estimación*, no
+  dato del motor. El zombi de prueba va a 72 u (≈ 1,44 m), dentro de MinRange 0,61 / MaxRange 1,6 del remo.
+- **Velocidad de rotación:** el golpe vanilla de bate llega a 16° por 1/4 de frame (`R_Hand`); umbral 20°.
+- **Pose de impacto del remo:** búsqueda en grilla (cabeceo, inclinación del plano, desplazamiento de manos)
+  maximizando el margen de la pala trasera con torso/cabeza/piernas, con alcance de brazo y contacto en la
+  franja hombro-cuello. Elegido: TILT 15°, PITCH 20°, manos +3 u a la izquierda.
