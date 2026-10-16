@@ -117,6 +117,18 @@ def AT_TacLight():
         gk.tube("lente", 0.0455, 0.0462, 0.0098, gk.accent("lente", (0.85, 0.88, 0.9)), z=z, segs=22)]
 
 
+def AT_Granada40():
+    """Granada de 40 mm: vaina de aluminio con culote, ojiva verde oliva y franja amarilla (alto explosivo)."""
+    al, ol = gk.accent("aluminio", (0.55, 0.56, 0.58)), gk.accent("oliva", (0.24, 0.27, 0.16))
+    am = gk.accent("franja", (0.80, 0.62, 0.08))
+    return [gk.lathe_x("vaina", [(0.0, 0.0), (0.0, 0.0150), (0.004, 0.0150), (0.004, 0.0138), (0.030, 0.0138),
+                                 (0.030, 0.0)], al, segs=24),
+            gk.lathe_x("ojiva", [(0.029, 0.0), (0.029, 0.0140), (0.044, 0.0140), (0.056, 0.0105),
+                                 (0.064, 0.0050), (0.066, 0.0)], ol, segs=24),
+            gk.tube("franja", 0.033, 0.036, 0.0142, am, segs=24),
+            gk.tube("culote", -0.0008, 0.0002, 0.0050, gk.brass(), segs=16)]
+
+
 def _mag_photo(gun, origin_px, **kw):
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     mod = __import__(gun)
@@ -151,7 +163,7 @@ def AT_G19Mag():
 
 ALL = {"AT_ACOG": AT_ACOG, "AT_LPVO": AT_LPVO, "AT_HoloSight": AT_HoloSight, "AT_Thermal": AT_Thermal,
        "AT_TacLight": AT_TacLight, "AT_LancerMag": AT_LancerMag, "AT_SkullMag": AT_SkullMag,
-       "AT_AKMag": AT_AKMag, "AT_G19Mag": AT_G19Mag}
+       "AT_AKMag": AT_AKMag, "AT_G19Mag": AT_G19Mag, "AT_Granada40": AT_Granada40}
 
 
 ICON_ROT = {"AT_HoloSight": (0, 0, -55)}   # que se vea la ventana

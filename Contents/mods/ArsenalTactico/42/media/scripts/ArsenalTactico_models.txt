@@ -137,6 +137,375 @@ module Base
         }
     }
 
+    model AT_GXP
+    {
+        mesh = weapons/ArsenalTactico/AT_GXP,
+        texture = weapons/ArsenalTactico/AT_GXP,
+        attachment muzzle
+        {
+            offset = -0.0000 0.1541 -0.0218,
+            rotate = -90.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = -0.0000 0.0693 0.0010,
+            rotate = 180.0000 0.0000 -180.0000,
+        }
+        attachment world
+        {
+            offset = -0.0090 0.0620 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment Bip01_Prop2
+        {
+            offset = -0.0338 0.0424 0.0000,
+            rotate = 90.0008 1.1964 -90.0396,
+        }
+    }
+
+    model AT_MD34
+    {
+        mesh = weapons/ArsenalTactico/AT_MD34,
+        texture = weapons/ArsenalTactico/AT_MD34,
+        attachment muzzle
+        {
+            offset = -0.0000 0.1409 -0.0179,
+            rotate = -90.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = -0.0000 0.0648 0.0030,
+            rotate = 180.0000 0.0000 -180.0000,
+        }
+        attachment world
+        {
+            offset = -0.0090 0.0620 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment Bip01_Prop2
+        {
+            offset = -0.0338 0.0424 0.0000,
+            rotate = 90.0008 1.1964 -90.0396,
+        }
+    }
+
+    model AT_GravRecon
+    {
+        mesh = weapons/ArsenalTactico/AT_GravRecon,
+        texture = weapons/ArsenalTactico/AT_GravRecon,
+        attachment muzzle
+        {
+            offset = -0.0000 0.1466 -0.0168,
+            rotate = -90.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = -0.0000 0.0556 0.0027,
+            rotate = 180.0000 0.0000 -180.0000,
+        }
+        attachment world
+        {
+            offset = -0.0090 0.0620 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment Bip01_Prop2
+        {
+            offset = -0.0338 0.0424 0.0000,
+            rotate = 90.0008 1.1964 -90.0396,
+        }
+    }
+
+    model AT_VikorS1
+    {
+        mesh = weapons/ArsenalTactico/AT_VikorS1,
+        texture = weapons/ArsenalTactico/AT_VikorS1,
+        attachment muzzle
+        {
+            offset = -0.0000 0.1104 -0.0156,
+            rotate = -90.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = -0.0000 0.0831 0.0049,
+            rotate = 180.0000 0.0000 -180.0000,
+        }
+        attachment world
+        {
+            offset = -0.0090 0.0620 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment Bip01_Prop2
+        {
+            offset = -0.0338 0.0424 0.0000,
+            rotate = 90.0008 1.1964 -90.0396,
+        }
+    }
+
+    model AT_FNPR
+    {
+        mesh = weapons/ArsenalTactico/AT_FNPR,
+        texture = weapons/ArsenalTactico/AT_FNPR,
+        attachment muzzle
+        {
+            offset = -0.0000 0.3077 -0.0129,
+            rotate = -90.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = -0.0000 0.0825 0.0268,
+            rotate = 180.0000 0.0000 -180.0000,
+        }
+        attachment world
+        {
+            offset = -0.0090 0.0620 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment Bip01_Prop2
+        {
+            offset = -0.0338 0.0424 0.0000,
+            rotate = 90.0008 1.1964 -90.0396,
+        }
+    }
+
+    model AT_FNSAR
+    {
+        mesh = weapons/ArsenalTactico/AT_FNSAR,
+        texture = weapons/ArsenalTactico/AT_FNSAR,
+        attachment muzzle
+        {
+            offset = -0.0000 0.1370 -0.0188,
+            rotate = -90.0000 0.0000 0.0000,
+        }
+        attachment at_optic
+        {
+            offset = 0.0000 -0.0300 -0.0420,
+            rotate = 180.0000 0.0000 -180.0000,
+        }
+        attachment at_light
+        {
+            offset = -0.0000 0.1071 0.0421,
+            rotate = 180.0000 0.0000 -180.0000,
+        }
+        attachment world
+        {
+            offset = -0.0090 0.0620 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment Bip01_Prop2
+        {
+            offset = -0.0338 0.0424 0.0000,
+            rotate = 90.0008 1.1964 -90.0396,
+        }
+    }
+
+    model AT_QDX99
+    {
+        mesh = weapons/ArsenalTactico/AT_QDX99,
+        texture = weapons/ArsenalTactico/AT_QDX99,
+        attachment muzzle
+        {
+            offset = -0.0000 0.1541 -0.0423,
+            rotate = -90.0000 0.0000 0.0000,
+        }
+        attachment at_optic
+        {
+            offset = 0.0000 -0.0085 -0.0788,
+            rotate = 180.0000 0.0000 -180.0000,
+        }
+        attachment at_light
+        {
+            offset = -0.0000 0.1355 -0.0125,
+            rotate = 180.0000 0.0000 -180.0000,
+        }
+        attachment world
+        {
+            offset = -0.0090 0.0620 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment Bip01_Prop2
+        {
+            offset = -0.0338 0.0424 0.0000,
+            rotate = 90.0008 1.1964 -90.0396,
+        }
+    }
+
+    model AT_MX4
+    {
+        mesh = weapons/ArsenalTactico/AT_MX4,
+        texture = weapons/ArsenalTactico/AT_MX4,
+        attachment muzzle
+        {
+            offset = 0.0000 0.2729 0.0274,
+            rotate = -90.0000 0.0000 -180.0000,
+        }
+        attachment at_optic
+        {
+            offset = 0.0000 0.0638 0.0618,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = 0.0000 0.2106 0.0023,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment world
+        {
+            offset = 0.0200 0.0430 0.0000,
+            rotate = 180.0000 0.0000 180.0000,
+        }
+    }
+
+    model AT_AUGA5
+    {
+        mesh = weapons/ArsenalTactico/AT_AUGA5,
+        texture = weapons/ArsenalTactico/AT_AUGA5,
+        attachment muzzle
+        {
+            offset = 0.0000 0.2020 0.0322,
+            rotate = -90.0000 0.0000 -180.0000,
+        }
+        attachment at_optic
+        {
+            offset = 0.0000 0.0402 0.0838,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = 0.0000 0.1712 0.0027,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment world
+        {
+            offset = 0.0200 -0.0441 0.0000,
+            rotate = 180.0000 0.0000 180.0000,
+        }
+    }
+
+    model AT_AG203
+    {
+        mesh = weapons/ArsenalTactico/AT_AG203,
+        texture = weapons/ArsenalTactico/AT_AG203,
+        attachment muzzle
+        {
+            offset = 0.0000 0.4172 0.0316,
+            rotate = -90.0000 0.0000 -180.0000,
+        }
+        attachment at_optic
+        {
+            offset = 0.0000 0.0906 0.0568,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = 0.0000 0.2251 -0.0030,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment world
+        {
+            offset = 0.0200 0.1468 0.0000,
+            rotate = 180.0000 0.0000 180.0000,
+        }
+    }
+
+    model AT_Komodo
+    {
+        mesh = weapons/ArsenalTactico/AT_Komodo,
+        texture = weapons/ArsenalTactico/AT_Komodo,
+        attachment muzzle
+        {
+            offset = 0.0000 0.3643 0.0433,
+            rotate = -90.0000 0.0000 -180.0000,
+        }
+        attachment at_optic
+        {
+            offset = 0.0000 0.0812 0.0750,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = 0.0000 0.1821 0.0021,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment world
+        {
+            offset = 0.0200 0.1043 0.0000,
+            rotate = 180.0000 0.0000 180.0000,
+        }
+    }
+
+    model AT_RPK101
+    {
+        mesh = weapons/ArsenalTactico/AT_RPK101,
+        texture = weapons/ArsenalTactico/AT_RPK101,
+        attachment muzzle
+        {
+            offset = 0.0000 0.4346 0.0228,
+            rotate = -90.0000 0.0000 -180.0000,
+        }
+        attachment at_optic
+        {
+            offset = 0.0000 0.0858 0.0490,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = 0.0000 0.2563 -0.0201,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment world
+        {
+            offset = 0.0200 0.1257 0.0000,
+            rotate = 180.0000 0.0000 180.0000,
+        }
+    }
+
+    model AT_PSR
+    {
+        mesh = weapons/ArsenalTactico/AT_PSR,
+        texture = weapons/ArsenalTactico/AT_PSR,
+        attachment muzzle
+        {
+            offset = 0.0000 0.4669 0.0249,
+            rotate = -90.0000 0.0000 -180.0000,
+        }
+        attachment at_light
+        {
+            offset = 0.0000 0.2017 0.0030,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment world
+        {
+            offset = 0.0200 0.1565 0.0000,
+            rotate = 180.0000 0.0000 180.0000,
+        }
+    }
+
+    model AT_CycloneAGL
+    {
+        mesh = weapons/ArsenalTactico/AT_CycloneAGL,
+        texture = weapons/ArsenalTactico/AT_CycloneAGL,
+        attachment muzzle
+        {
+            offset = 0.0000 0.3093 0.0185,
+            rotate = -90.0000 0.0000 -180.0000,
+        }
+        attachment at_optic
+        {
+            offset = 0.0000 0.1269 0.0685,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment at_light
+        {
+            offset = 0.0000 0.2580 -0.0132,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+        attachment world
+        {
+            offset = 0.0200 0.0621 0.0000,
+            rotate = 180.0000 0.0000 180.0000,
+        }
+    }
+
     model AT_SkullMag
     {
         mesh = weapons/ArsenalTactico/AT_SkullMag,
@@ -174,6 +543,149 @@ module Base
     {
         mesh = weapons/ArsenalTactico/AT_G19Mag,
         texture = weapons/ArsenalTactico/AT_G19Mag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_GXPMag
+    {
+        mesh = weapons/ArsenalTactico/AT_GXPMag,
+        texture = weapons/ArsenalTactico/AT_GXPMag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_MD34Mag
+    {
+        mesh = weapons/ArsenalTactico/AT_MD34Mag,
+        texture = weapons/ArsenalTactico/AT_MD34Mag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_GravMag
+    {
+        mesh = weapons/ArsenalTactico/AT_GravMag,
+        texture = weapons/ArsenalTactico/AT_GravMag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_VikorMag
+    {
+        mesh = weapons/ArsenalTactico/AT_VikorMag,
+        texture = weapons/ArsenalTactico/AT_VikorMag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_FNPRMag
+    {
+        mesh = weapons/ArsenalTactico/AT_FNPRMag,
+        texture = weapons/ArsenalTactico/AT_FNPRMag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_SARMag
+    {
+        mesh = weapons/ArsenalTactico/AT_SARMag,
+        texture = weapons/ArsenalTactico/AT_SARMag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_QDXMag
+    {
+        mesh = weapons/ArsenalTactico/AT_QDXMag,
+        texture = weapons/ArsenalTactico/AT_QDXMag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_MX4Mag
+    {
+        mesh = weapons/ArsenalTactico/AT_MX4Mag,
+        texture = weapons/ArsenalTactico/AT_MX4Mag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_AUGMag
+    {
+        mesh = weapons/ArsenalTactico/AT_AUGMag,
+        texture = weapons/ArsenalTactico/AT_AUGMag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_AG203Mag
+    {
+        mesh = weapons/ArsenalTactico/AT_AG203Mag,
+        texture = weapons/ArsenalTactico/AT_AG203Mag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_KomodoMag
+    {
+        mesh = weapons/ArsenalTactico/AT_KomodoMag,
+        texture = weapons/ArsenalTactico/AT_KomodoMag,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_RPKDrum
+    {
+        mesh = weapons/ArsenalTactico/AT_RPKDrum,
+        texture = weapons/ArsenalTactico/AT_RPKDrum,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_PSRMag
+    {
+        mesh = weapons/ArsenalTactico/AT_PSRMag,
+        texture = weapons/ArsenalTactico/AT_PSRMag,
         attachment world
         {
             offset = 0.0000 0.0000 0.0000,
@@ -229,6 +741,17 @@ module Base
     {
         mesh = weapons/ArsenalTactico/AT_TacLight,
         texture = weapons/ArsenalTactico/AT_TacLight,
+        attachment world
+        {
+            offset = 0.0000 0.0000 0.0000,
+            rotate = 0.0000 0.0000 0.0000,
+        }
+    }
+
+    model AT_Granada40
+    {
+        mesh = weapons/ArsenalTactico/AT_Granada40,
+        texture = weapons/ArsenalTactico/AT_Granada40,
         attachment world
         {
             offset = 0.0000 0.0000 0.0000,

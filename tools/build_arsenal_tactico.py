@@ -291,14 +291,79 @@ Tags = base:flashlight;base:usesbattery
 CanAttach = ItemCodeOnTest.hasScrewdriver
 CanDetach = ItemCodeOnTest.hasScrewdriver"""
 
+# --------------------------------------------------------------- variantes (sobre las bases vanilla)
+P45 = {  # Pistol2 (M1911) de 42.18: .45
+    "AimReleaseSound": "M1911AimRelease", "AmmoBox": "Base.Bullets45Box", "AmmoType": "base:bullets_45",
+    "BreakSound": "M1911Break", "BringToBearSound": "M1911BringToBear", "ClickSound": "M1911Jam",
+    "DropSound": "M1911Drop", "EjectAmmoSound": "M1911EjectAmmo", "EjectAmmoStartSound": "M1911EjectAmmoStart",
+    "EjectAmmoStopSound": "M1911EjectAmmoStop", "EquipSound": "M1911Equip", "InsertAmmoSound": "M1911InsertAmmo",
+    "InsertAmmoStartSound": "M1911InsertAmmoStart", "InsertAmmoStopSound": "M1911InsertAmmoStop",
+    "MuzzleFlashModelKey": "muzzle_flash_handgun02", "RackSound": "M1911Rack", "ShellFallSound": "M1911CartridgeFall",
+    "SwingSound": "M1911Shoot", "UnequipSound": "M1911UnEquip", "StopPower": "7.0", "MaxDamage": "1.2",
+    "MinDamage": "0.9", "SoundRadius": "70", "SoundVolume": "50"}
+R308 = {  # AssaultRifle2 (M14) de 42.18: .308
+    "AimReleaseSound": "M14AimRelease", "AmmoBox": "Base.308Box", "AmmoType": "base:bullets_308",
+    "BreakSound": "M14Break", "BringToBearSound": "M14BringToBear", "ClickSound": "M14Jam", "DropSound": "M14Drop",
+    "EjectAmmoSound": "M14EjectAmmo", "EjectAmmoStartSound": "M14EjectAmmoStart",
+    "EjectAmmoStopSound": "M14EjectAmmoStop", "EquipSound": "M14Equip", "InsertAmmoSound": "M14InsertAmmo",
+    "InsertAmmoStartSound": "M14InsertAmmoStart", "InsertAmmoStopSound": "M14InsertAmmoStop",
+    "MuzzleFlashModelKey": "muzzle_flash_assault_rifle02", "RackSound": "M14Rack", "ShellFallSound": "M14CartridgeFall",
+    "SwingSound": "M14Shoot", "UnequipSound": "M14UnEquip", "CriticalChance": "30.0", "MaxDamage": "2.0",
+    "MinDamage": "1.2", "MaxHitcount": "1", "SoundRadius": "170", "MaxRange": "38.0", "RecoilDelay": "20"}
+SMG = {  # PDW compactas: base de pistola en automático, a dos manos
+    "FireMode": "Auto", "FireModePossibilities": "Auto/Single", "TwoHandWeapon": "true",
+    "RequiresEquippedBothHands": "true", "CyclicRateMultiplier": "1.0", "MaxHitcount": "1"}
+AGL = {  # lanzagranadas de tambor: carga de a una (recarga de escopeta); la explosión la hace la Lua
+    "AimReleaseSound": "JS2000ShotgunAimRelease", "AmmoBox": None, "AmmoType": "arsenaltactico:granada_40mm",
+    "BreakSound": "JS2000ShotgunBreak", "BringToBearSound": "JS2000ShotgunBringToBear",
+    "ClickSound": "JS2000ShotgunJam", "DropSound": "JS2000ShotgunDrop", "EjectAmmoSound": "JS2000ShotgunEjectAmmo",
+    "EjectAmmoStartSound": "JS2000ShotgunEjectAmmoStart", "EjectAmmoStopSound": "JS2000ShotgunEjectAmmoStop",
+    "EquipSound": "JS2000ShotgunEquip", "InsertAmmoSound": "JS2000ShotgunInsertAmmo",
+    "InsertAmmoStartSound": "JS2000ShotgunInsertAmmoStart", "InsertAmmoStopSound": "JS2000ShotgunInsertAmmoStop",
+    "RackSound": "JS2000ShotgunRack", "ShellFallSound": None, "SwingSound": "JS2000ShotgunShoot",
+    "UnequipSound": "JS2000ShotgunUnEquip", "MuzzleFlashModelKey": "muzzle_flash_shotgun", "FireMode": "Single",
+    "FireModePossibilities": None, "CyclicRateMultiplier": None, "PiercingBullets": None,
+    "WeaponReloadType": "shotgun", "MaxAmmo": "6", "MaxDamage": "4.0", "MinDamage": "3.0", "MaxHitcount": "1",
+    "KnockdownMod": "8.0", "StopPower": "20.0", "MaxRange": "24.0", "RecoilDelay": "45", "Reloadtime": "35",
+    "SoundRadius": "120", "SoundVolume": "60", "Weight": "5.2", "Aimingtime": "45", "MetalValue": "50.0",
+    "ConditionLowerChanceOneIn": "80"}
+GRENADE = """DisplayCategory = Ammo
+ItemType = base:normal
+Weight = 0.23
+MetalValue = 3.0
+Tags = base:ammo"""
+CHARGE = """DisplayCategory = Explosives
+ItemType = base:weapon
+Weight = 0.23
+ExplosionPower = 80
+ExplosionRange = 4
+ExplosionSound = PipeBombExplode
+FireStartingEnergy = 0
+FireStartingChance = 0
+MaxDamage = 0.0
+MaxHitcount = 0
+MaxRange = 1.0
+MinDamage = 0.0
+SwingAnim = Throw
+ConditionMax = 1"""
+
+
+def gun(base, extra, **over):
+    return (base, dict(extra, **over))
+
+
 # --------------------------------------------------------------- tabla del mod
-RIFLES = ["AT_M4", "AT_MCX", "AT_AK101", "AT_Marlin336"]
-ALL_GUNS = RIFLES + ["AT_G19"]
+RIFLES = ["AT_M4", "AT_MCX", "AT_AK101", "AT_Marlin336", "AT_MX4", "AT_AUGA5", "AT_AG203", "AT_Komodo",
+          "AT_RPK101", "AT_PSR", "AT_CycloneAGL"]
+PDWS = ["AT_FNSAR", "AT_QDX99"]
+PISTOLS = ["AT_G19", "AT_GXP", "AT_MD34", "AT_GravRecon", "AT_VikorS1", "AT_FNPR"]
+ALL_GUNS = RIFLES + PDWS + PISTOLS
 OPTICS = ["AT_ACOG", "AT_LPVO", "AT_HoloSight", "AT_Thermal"]
+OPTIC_GUNS = [g for g in RIFLES if g != "AT_PSR"] + PDWS     # la PSR trae su mira fija
 
 
 def parts_lines(gun):
-    lines = [f"ModelWeaponPart = Base.{p} {p} at_optic at_optic" for p in OPTICS if gun in RIFLES]
+    lines = [f"ModelWeaponPart = Base.{p} {p} at_optic at_optic" for p in OPTICS if gun in OPTIC_GUNS]
     return lines + ["ModelWeaponPart = Base.AT_TacLight AT_TacLight at_light at_light"]
 
 
@@ -314,6 +379,41 @@ GUNS = {
     "AT_Marlin336": (LEVER, {"Weight": "3.3", "MaxRange": "32.0", "Aimingtime": "38", "MetalValue": "40.0"}),
     "AT_G19": (PISTOL, {"Weight": "0.9", "Aimingtime": "22", "MaxRange": "14.0", "RecoilDelay": "11",
                         "MagazineType": "Base.AT_G19Mag", "MetalValue": "22.0"}),
+    # --- lámina conceptual
+    "AT_GXP": (PISTOL, {"Weight": "1.0", "Aimingtime": "24", "MaxRange": "16.0", "MaxAmmo": "17", "ClipSize": "17",
+                        "RecoilDelay": "10", "MagazineType": "Base.AT_GXPMag", "MetalValue": "24.0"}),
+    "AT_MD34": gun(PISTOL, P45, Weight="1.2", Aimingtime="26", MaxAmmo="8", ClipSize="8", MaxRange="13.0",
+                   MagazineType="Base.AT_MD34Mag", MetalValue="28.0"),
+    "AT_GravRecon": (PISTOL, {"Weight": "1.0", "Aimingtime": "22", "MaxRange": "15.0", "MaxAmmo": "17",
+                              "ClipSize": "17", "MagazineType": "Base.AT_GravMag", "MetalValue": "24.0"}),
+    "AT_VikorS1": (PISTOL, {"Weight": "1.0", "Aimingtime": "24", "MaxRange": "14.0", "MaxAmmo": "18",
+                            "ClipSize": "18", "MaxDamage": "1.05", "MagazineType": "Base.AT_VikorMag",
+                            "MetalValue": "24.0"}),
+    "AT_FNPR": gun(PISTOL, P45, Weight="1.6", Aimingtime="28", MaxAmmo="15", ClipSize="15", MaxRange="15.0",
+                   SoundRadius="25", SoundVolume="12", MagazineType="Base.AT_FNPRMag", MetalValue="30.0"),
+    "AT_FNSAR": gun(PISTOL, SMG, Weight="2.8", Aimingtime="30", MaxAmmo="50", ClipSize="50", MaxRange="18.0",
+                    MinDamage="0.6", MaxDamage="1.0", RecoilDelay="7", SoundRadius="110",
+                    MagazineType="Base.AT_SARMag", MetalValue="34.0"),
+    "AT_QDX99": gun(PISTOL, SMG, Weight="2.6", Aimingtime="28", MaxAmmo="30", ClipSize="30", MaxRange="17.0",
+                    MinDamage="0.6", MaxDamage="1.0", RecoilDelay="7", SoundRadius="110",
+                    MagazineType="Base.AT_QDXMag", MetalValue="32.0"),
+    "AT_MX4": (RIFLE, {"Weight": "3.0", "Aimingtime": "32", "MaxRange": "26.0", "MaxDamage": "1.5",
+                       "RecoilDelay": "13", "MagazineType": "Base.AT_MX4Mag", "MetalValue": "38.0"}),
+    "AT_AUGA5": (RIFLE, {"Weight": "3.6", "Aimingtime": "34", "MaxRange": "32.0", "RecoilDelay": "14",
+                         "MagazineType": "Base.AT_AUGMag", "MetalValue": "40.0"}),
+    "AT_AG203": gun(RIFLE, R308, Weight="4.0", Aimingtime="45", MaxAmmo="20", FireMode="Auto",
+                    FireModePossibilities="Auto/Single", MagazineType="Base.AT_AG203Mag", MetalValue="45.0"),
+    "AT_Komodo": gun(RIFLE, R308, Weight="3.8", Aimingtime="42", MaxAmmo="20", FireMode="Auto",
+                     FireModePossibilities="Auto/Single", RecoilDelay="18", MagazineType="Base.AT_KomodoMag",
+                     MetalValue="44.0"),
+    "AT_RPK101": (RIFLE, {"Weight": "5.5", "Aimingtime": "50", "MaxAmmo": "75", "MaxRange": "32.0",
+                          "MaxHitcount": "2", "RecoilDelay": "12", "Reloadtime": "40",
+                          "MagazineType": "Base.AT_RPKDrum", "MetalValue": "55.0"}),
+    "AT_PSR": gun(RIFLE, R308, Weight="4.4", Aimingtime="48", MaxAmmo="10", FireMode="Single",
+                  FireModePossibilities=None, MaxDamage="2.6", MinDamage="1.8", MaxRange="45.0",
+                  CriticalChance="40.0", SoundRadius="40", SoundVolume="15", MaxSightRange="16.0",
+                  MinSightRange="5", MagazineType="Base.AT_PSRMag", MetalValue="48.0"),
+    "AT_CycloneAGL": (RIFLE, AGL),
 }
 
 MAGS = {  # id: (arma, munición, capacidad, etiqueta)
@@ -321,6 +421,19 @@ MAGS = {  # id: (arma, munición, capacidad, etiqueta)
     "AT_LancerMag": ("AT_MCX", "base:bullets_556", 30, "base:riflemagazine"),
     "AT_AKMag": ("AT_AK101", "base:bullets_556", 30, "base:riflemagazine"),
     "AT_G19Mag": ("AT_G19", "base:bullets_9mm", 15, "base:pistolmagazine"),
+    "AT_GXPMag": ("AT_GXP", "base:bullets_9mm", 17, "base:pistolmagazine"),
+    "AT_MD34Mag": ("AT_MD34", "base:bullets_45", 8, "base:pistolmagazine"),
+    "AT_GravMag": ("AT_GravRecon", "base:bullets_9mm", 17, "base:pistolmagazine"),
+    "AT_VikorMag": ("AT_VikorS1", "base:bullets_9mm", 18, "base:pistolmagazine"),
+    "AT_FNPRMag": ("AT_FNPR", "base:bullets_45", 15, "base:pistolmagazine"),
+    "AT_SARMag": ("AT_FNSAR", "base:bullets_9mm", 50, "base:pistolmagazine"),
+    "AT_QDXMag": ("AT_QDX99", "base:bullets_9mm", 30, "base:pistolmagazine"),
+    "AT_MX4Mag": ("AT_MX4", "base:bullets_556", 30, "base:riflemagazine"),
+    "AT_AUGMag": ("AT_AUGA5", "base:bullets_556", 30, "base:riflemagazine"),
+    "AT_AG203Mag": ("AT_AG203", "base:bullets_308", 20, "base:riflemagazine"),
+    "AT_KomodoMag": ("AT_Komodo", "base:bullets_308", 20, "base:riflemagazine"),
+    "AT_RPKDrum": ("AT_RPK101", "base:bullets_556", 75, "base:riflemagazine"),
+    "AT_PSRMag": ("AT_PSR", "base:bullets_308", 10, "base:riflemagazine"),
 }
 
 PARTS = {  # id: (base, propiedades)
@@ -335,8 +448,12 @@ PARTS = {  # id: (base, propiedades)
     "AT_TacLight": (LIGHT, {"Weight": "0.2", "WeightModifier": "0.2", "AimingTimeModifier": "5",
                             "LightDistance": "18", "LightStrength": "1.5"}),
 }
-MOUNT = {p: RIFLES for p in OPTICS}
+MOUNT = {p: OPTIC_GUNS for p in OPTICS}
 MOUNT["AT_TacLight"] = ALL_GUNS
+EXTRA = {  # ítems sueltos: granada de 40 mm (munición) y la carga que usa la Lua para la explosión
+    "AT_Granada40": (GRENADE, {"Icon": "AT_Granada40", "WorldStaticModel": "AT_Granada40"}),
+    "AT_Granada40Carga": (CHARGE, {"Icon": "AT_Granada40", "WorldStaticModel": "AT_Granada40"}),
+}
 
 NAMES = {  # id: (EN, ES)
     "AT_M4": ("M4 Carbine", "Carabina M4"),
@@ -353,28 +470,69 @@ NAMES = {  # id: (EN, ES)
     "AT_HoloSight": ("Holographic Sight", "Mira holográfica"),
     "AT_Thermal": ("Thermal Scope", "Mira térmica"),
     "AT_TacLight": ("Tactical Weapon Light", "Linterna táctica"),
+    # --- lámina conceptual
+    "AT_GXP": ("GXP Long-Slide Pistol", "Pistola GXP de corredera larga"),
+    "AT_MD34": ("MD34 Diablo Pistol", "Pistola MD34 Diablo"),
+    "AT_GravRecon": ("Grav Recon Pistol", "Pistola Grav Recon"),
+    "AT_VikorS1": ("Vikor-S1 Pistol", "Pistola Vikor-S1"),
+    "AT_FNPR": ("FNP-R Suppressed Pistol", "Pistola FNP-R con supresor"),
+    "AT_FNSAR": ("FN SAR Personal Defense Weapon", "Arma compacta FN SAR"),
+    "AT_QDX99": ("QDX-99 Compact SMG", "Subfusil compacto QDX-99"),
+    "AT_MX4": ("MX-4 Carbine", "Carabina MX-4"),
+    "AT_AUGA5": ("AUG A5 Bullpup Rifle", "Fusil bullpup AUG A5"),
+    "AT_AG203": ("AG-203 Battle Rifle", "Fusil de combate AG-203"),
+    "AT_Komodo": ("Komodo 6.8 Rifle", "Fusil Komodo 6.8"),
+    "AT_CycloneAGL": ("Cyclone-AGL Grenade Launcher", "Lanzagranadas Cyclone-AGL"),
+    "AT_RPK101": ("RPK-101 Uragan Light Machine Gun", "Ametralladora ligera RPK-101 Uragan"),
+    "AT_PSR": ("PSR Suppressed Sniper Rifle", "Fusil de precisión PSR con supresor"),
+    "AT_GXPMag": ("GXP Magazine", "Cargador de GXP"),
+    "AT_MD34Mag": ("MD34 Magazine", "Cargador de MD34"),
+    "AT_GravMag": ("Grav Recon Magazine", "Cargador de Grav Recon"),
+    "AT_VikorMag": ("Vikor-S1 Magazine", "Cargador de Vikor-S1"),
+    "AT_FNPRMag": ("FNP-R Magazine", "Cargador de FNP-R"),
+    "AT_SARMag": ("FN SAR 50-round Magazine", "Cargador de 50 de FN SAR"),
+    "AT_QDXMag": ("QDX-99 Magazine", "Cargador de QDX-99"),
+    "AT_MX4Mag": ("MX-4 Magazine", "Cargador de MX-4"),
+    "AT_AUGMag": ("AUG Magazine", "Cargador de AUG"),
+    "AT_AG203Mag": ("AG-203 Magazine", "Cargador de AG-203"),
+    "AT_KomodoMag": ("Komodo Magazine", "Cargador de Komodo"),
+    "AT_RPKDrum": ("RPK-101 75-round Drum", "Tambor de 75 de RPK-101"),
+    "AT_PSRMag": ("PSR Magazine", "Cargador de PSR"),
+    "AT_Granada40": ("40mm Grenade", "Granada de 40 mm"),
+    "AT_Granada40Carga": ("40mm Grenade Charge", "Carga de granada de 40 mm"),
 }
 
 LOOT = {  # contenedor (ProceduralDistributions de 42.18): {ítem: peso}
-    "FirearmWeapons_Mid": {"AT_M4": 1, "AT_MCX": 0.5, "AT_AK101": 0.5, "AT_G19": 2, "AT_Marlin336": 1},
+    "FirearmWeapons_Mid": {"AT_M4": 1, "AT_MCX": 0.5, "AT_AK101": 0.5, "AT_G19": 2, "AT_Marlin336": 1,
+                           "AT_GXP": 1, "AT_GravRecon": 1, "AT_VikorS1": 1, "AT_MD34": 0.7, "AT_MX4": 0.5},
     "FirearmWeapons_Late": {"AT_M4": 1, "AT_MCX": 0.5, "AT_AK101": 0.5, "AT_G19": 2, "AT_Marlin336": 1,
-                            "AT_TacLight": 0.5, "AT_HoloSight": 0.5},
-    "GunStoreGuns": {"AT_G19": 2, "AT_Marlin336": 1},
-    "GunStorePistols": {"AT_G19": 4, "AT_TacLight": 1},
-    "GunStoreRifles": {"AT_Marlin336": 2, "AT_MCX": 0.5, "AT_LPVO": 1},
+                            "AT_TacLight": 0.5, "AT_HoloSight": 0.5, "AT_AUGA5": 0.5, "AT_Komodo": 0.4,
+                            "AT_AG203": 0.4, "AT_FNSAR": 0.3, "AT_QDX99": 0.3},
+    "GunStoreGuns": {"AT_G19": 2, "AT_Marlin336": 1, "AT_GXP": 1, "AT_MD34": 1},
+    "GunStorePistols": {"AT_G19": 4, "AT_TacLight": 1, "AT_GXP": 2, "AT_GravRecon": 2, "AT_VikorS1": 2,
+                        "AT_MD34": 1.5, "AT_FNPR": 0.5},
+    "GunStoreRifles": {"AT_Marlin336": 2, "AT_MCX": 0.5, "AT_LPVO": 1, "AT_MX4": 0.7, "AT_AUGA5": 0.5,
+                       "AT_Komodo": 0.4},
     "GunStoreAccessories": {"AT_ACOG": 1, "AT_LPVO": 1, "AT_HoloSight": 2, "AT_Thermal": 0.3, "AT_TacLight": 2},
-    "GunStoreMagsAmmo": {"AT_SkullMag": 1, "AT_LancerMag": 1, "AT_AKMag": 1, "AT_G19Mag": 2},
-    "PawnShopGunsSpecial": {"AT_M4": 1, "AT_MCX": 1, "AT_AK101": 1, "AT_Thermal": 0.3},
-    "PoliceStorageGuns": {"AT_G19": 4, "AT_TacLight": 1},
-    "PoliceStorageAmmunition": {"AT_G19Mag": 4},
-    "SWATStorageGuns": {"AT_M4": 4, "AT_MCX": 3, "AT_G19": 4, "AT_TacLight": 3, "AT_HoloSight": 2, "AT_ACOG": 2},
-    "SWATStorageAmmunition": {"AT_SkullMag": 4, "AT_LancerMag": 3, "AT_G19Mag": 4},
-    "ArmyStorageGuns": {"AT_M4": 4, "AT_ACOG": 2, "AT_Thermal": 0.5},
-    "ArmyStorageAmmunition": {"AT_SkullMag": 4},
-    "DrugLabGuns": {"AT_AK101": 2, "AT_G19": 2, "AT_AKMag": 2},
-    "DrugShackWeapons": {"AT_AK101": 1, "AT_G19": 1},
+    "GunStoreMagsAmmo": {"AT_SkullMag": 1, "AT_LancerMag": 1, "AT_AKMag": 1, "AT_G19Mag": 2, "AT_GXPMag": 1,
+                         "AT_GravMag": 1, "AT_VikorMag": 1, "AT_MD34Mag": 1, "AT_MX4Mag": 0.7, "AT_AUGMag": 0.5,
+                         "AT_KomodoMag": 0.4},
+    "PawnShopGunsSpecial": {"AT_M4": 1, "AT_MCX": 1, "AT_AK101": 1, "AT_Thermal": 0.3, "AT_FNPR": 0.5,
+                            "AT_QDX99": 0.5, "AT_AG203": 0.5},
+    "PoliceStorageGuns": {"AT_G19": 4, "AT_TacLight": 1, "AT_GXP": 2, "AT_GravRecon": 2, "AT_MX4": 1},
+    "PoliceStorageAmmunition": {"AT_G19Mag": 4, "AT_GXPMag": 2, "AT_GravMag": 2, "AT_MX4Mag": 1},
+    "SWATStorageGuns": {"AT_M4": 4, "AT_MCX": 3, "AT_G19": 4, "AT_TacLight": 3, "AT_HoloSight": 2, "AT_ACOG": 2,
+                        "AT_FNSAR": 2, "AT_QDX99": 1, "AT_AUGA5": 1, "AT_PSR": 0.5, "AT_FNPR": 1},
+    "SWATStorageAmmunition": {"AT_SkullMag": 4, "AT_LancerMag": 3, "AT_G19Mag": 4, "AT_SARMag": 2, "AT_QDXMag": 1,
+                              "AT_AUGMag": 1, "AT_PSRMag": 0.5, "AT_FNPRMag": 1},
+    "ArmyStorageGuns": {"AT_M4": 4, "AT_ACOG": 2, "AT_Thermal": 0.5, "AT_RPK101": 1, "AT_Komodo": 1,
+                        "AT_AG203": 1, "AT_PSR": 0.5, "AT_CycloneAGL": 0.4},
+    "ArmyStorageAmmunition": {"AT_SkullMag": 4, "AT_RPKDrum": 1, "AT_KomodoMag": 1, "AT_AG203Mag": 1,
+                              "AT_PSRMag": 0.5, "AT_Granada40": 2},
+    "DrugLabGuns": {"AT_AK101": 2, "AT_G19": 2, "AT_AKMag": 2, "AT_VikorS1": 1, "AT_QDX99": 0.5},
+    "DrugShackWeapons": {"AT_AK101": 1, "AT_G19": 1, "AT_VikorS1": 1},
     "Hunter": {"AT_Marlin336": 2},
-    "HuntingLockers": {"AT_Marlin336": 2, "AT_LPVO": 1},
+    "HuntingLockers": {"AT_Marlin336": 2, "AT_LPVO": 1, "AT_PSR": 0.2},
 }
 
 
@@ -384,12 +542,14 @@ def block(kind, name, base, over, extra=()):
     seen = set()
     for line in base.split("\n"):
         k = line.split("=", 1)[0].strip()
-        if k in over:
-            line = f"{k} = {over[k]}"
         seen.add(k)
+        if k in over:
+            if over[k] is None:        # None borra la propiedad heredada de la base vanilla
+                continue
+            line = f"{k} = {over[k]}"
         props.append(line)
     for k, v in over.items():
-        if k not in seen:
+        if k not in seen and v is not None:
             props.append(f"{k} = {v}")
     props += list(extra)
     body = "\n".join(f"        {p}," for p in props)
@@ -412,6 +572,8 @@ def items():
         o = dict(over, Icon=pid, MountOn=";".join(f"Base.{g}" for g in MOUNT[pid]), WorldStaticModel=pid,
                  StaticModel=pid)
         out.append(block("item", pid, base, o))
+    for eid, (base, over) in EXTRA.items():
+        out.append(block("item", eid, base, over))
     out.append("}\n")
     return "\n".join(out)
 
@@ -430,7 +592,7 @@ def models():
            "    sobre +Y y arriba +Z (M16_Rifle); pistolas arriba -Z (M9_Pistol). Las partes se montan en\n"
            "    at_optic / at_light (en pistolas rotate 180 0 -180, como el scope de Handgun03).\n*/\n"
            "module Base\n{\n"]
-    for mid in list(GUNS) + list(MAGS) + list(PARTS):
+    for mid in list(GUNS) + list(MAGS) + list(PARTS) + ["AT_Granada40"]:
         data = json.loads((ART / mid / "attachments.json").read_text())
         a = data["attachments"]
         hand = data["kind"] == "handgun"
@@ -493,8 +655,9 @@ def main():
     distributions()
     info = MOD / "mod.info"
     info.write_text("name=Arsenal Tactico\nid=ArsenalTactico\nauthor=francoppo04\n"
-                    "description=Cinco armas de fuego tacticas (M4, MX-C, AK-101, G-19, palanca 336T) con miras, "
-                    "linterna y cargadores propios. Balance vanilla.\nposter=poster.png\n", encoding="utf-8")
+                    "description=19 armas de fuego (pistolas, PDW, carabinas, fusiles, ametralladora ligera, fusil "
+                    "de precision y lanzagranadas con granadas que explotan) con miras, linterna y cargadores "
+                    "propios. Balance vanilla.\nposter=poster.png\n", encoding="utf-8")
     (MOD.parent / "common").mkdir(exist_ok=True)
     (MOD.parent / "common" / ".gitkeep").touch()
     print("[build] scripts, traducciones, botín y mod.info generados")
