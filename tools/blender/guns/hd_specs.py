@@ -161,45 +161,65 @@ _MARLIN_LOOP = [(700, 690), (703, 735), (690, 756), (660, 786), (625, 815), (595
                 (557, 782), (575, 750), (606, 726), (646, 710), (662, 700)]
 
 
+_MARLIN_CULATA_HUECO = [(230, 778), (443, 778), (442, 738), (474, 742), (480, 784), (228, 834)]
+
+
 def _band(pts, w):
     from shapely.geometry import LineString
     g = LineString(pts).buffer(w / 2, cap_style=1, join_style=1)
     return [tuple(p) for p in g.exterior.coords][:-1]
 
 
+def _marlin_palanca():
+    from shapely.geometry import Polygon, box
+    g = Polygon(_MARLIN_LOOP).buffer(9).union(box(594, 684, 758, 728))
+    return [tuple(p) for p in g.exterior.coords][:-1]
+
+
+_MARLIN_PALANCA = _marlin_palanca()
 _MM_MARLIN = 876 / 1332                       # Marlin 336 Dark: 876 mm de largo
 SPEC["AT_Marlin336"] = dict(
     img="marlin_rot.png", sil="AT_Marlin336", mm_px=_MM_MARLIN, origin=(590, 695), bore_y=597,
     K=0.000405 / (_MM_MARLIN / 1000), offset=(0.0, 0.0), kind="rifle",
+    # la silueta de esta foto es ruidosa (fondo de madera): solo mide, no recorta ni rellena
+    sil_cut=False, fill=False,
     # mira telescópica y linterna: accesorios del mod, fuera de la comparación
-    exclude=[[(560, 440), (1100, 440), (1100, 583), (560, 583)], [(1058, 612), (1280, 612), (1280, 662), (1058, 662)]],
+    # (y el borde inferior de la cantonera, donde el calcado se mete en la sombra)
+    exclude=[[(560, 440), (1100, 440), (1100, 583), (560, 583)], [(1058, 612), (1280, 612), (1280, 662), (1058, 662)],
+             [(100, 898), (260, 898), (260, 960), (100, 960)]],
+    holes=[_MARLIN_CULATA_HUECO],
     parts=[
         ("s", "cantonera", [(156, 686), (203, 690), (205, 906), (162, 906)], 42, "goma", {"round": True, "bevel": 6}),
-        ("s", "culata", [(200, 690), (448, 682), (472, 700), (472, 792), (200, 802)], 36, "pol",
-         {"bevel": 3, "segs": 2}),
-        ("s", "carrillera", [(232, 652), (440, 660), (448, 690), (232, 694)], 34, "pol", {"bevel": 5, "segs": 3}),
-        ("s", "barra", [(200, 850), (482, 784), (500, 808), (204, 880)], 22, "pol", {"bevel": 3, "segs": 2}),
-        ("s", "pata", [(200, 795), (222, 795), (222, 860), (200, 866)], 24, "pol", {}),
-        ("s", "portacartuchos", [(214, 722), (432, 718), (434, 792), (216, 796)], 6, "gris", {"y": -21}),
-        *[("vcyl", f"cartucho{i}", 250 + i * 27, 731, 785, 4.6, -24.5, "laton") for i in range(7)],
-        ("s", "garganta", [(445, 690), (515, 686), (575, 664), (640, 641), (656, 640), (652, 692), (606, 706), (578, 750),
-                           (562, 800), (472, 808), (466, 760)], 32, "pol", {"round": True, "bevel": 8}),
+        # culata esqueleto: cuerpo con portacartuchos arriba, barra abajo, hueco entre los dos
+        ("s", "culata", [(200, 690), (448, 678), (486, 672), (488, 742), (474, 740), (442, 736), (445, 778),
+                         (200, 778)], 36, "pol", {"bevel": 3, "segs": 2}),
+        ("s", "carrillera", [(232, 662), (430, 643), (442, 650), (448, 690), (232, 694)], 34, "pol",
+         {"bevel": 5, "segs": 3}),
+        ("s", "barra", [(200, 836), (482, 784), (500, 808), (204, 880)], 22, "pol", {"bevel": 3, "segs": 2}),
+        ("s", "pata", [(200, 776), (230, 776), (230, 846), (200, 852)], 24, "pol", {}),
+        ("s", "portacartuchos", [(230, 700), (440, 700), (440, 776), (230, 776)], 6, "gris", {"y": -21}),
+        *[("vcyl", f"cartucho{i}", 265 + i * 22.8, 728, 770, 4.6, -24.5, "laton") for i in range(7)],
+        ("s", "garganta", [(445, 680), (486, 676), (515, 686), (575, 664), (640, 641), (656, 640), (652, 692),
+                           (606, 706), (578, 750), (562, 800), (472, 808), (466, 760)], 32, "pol",
+         {"round": True, "bevel": 8}),
         ("s", "cajon", [(638, 600), (824, 600), (824, 682), (762, 682), (702, 693), (650, 694)], 28, "pavon",
          {"ct": 4}),
         ("s", "martillo", [(584, 652), (588, 640), (604, 633), (614, 636), (608, 650), (596, 658)], 8, "pavon", {}),
-        ("s", "palanca", _band(_MARLIN_LOOP, 11), 8, "pavon", {"bevel": 1.2, "segs": 2}),
-        ("s", "cordon", _band(_MARLIN_LOOP[1:7], 17), 11, "gris", {"round": True, "bevel": 4}),
+        # palanca: contorno del aro (con la parte que corre bajo el cajón) recortado con la silueta de la foto,
+        # que da los dos huecos (aro y gatillo)
+        ("s", "palanca", _MARLIN_PALANCA, 8, "pavon", {"sil": True, "bevel": 1.2, "segs": 2}),
+        ("s", "cordon", _band(_MARLIN_LOOP[1:7], 17), 11, "gris", {"round": True, "bevel": 4, "sil": True}),
         ("s", "cola", [(664, 698), (673, 698), (675, 730), (667, 733)], 5, "acero", {}),
-        ("s", "guardamanos", [(822, 590), (1052, 590), (1052, 668), (1010, 680), (822, 684)], 50, "pavon",
+        ("s", "guardamanos", [(822, 590), (1052, 590), (1052, 666), (1010, 677), (822, 681)], 50, "pavon",
          {"ct": 8, "cb": 12, "bevel": 1, "segs": 2}),
         ("s", "base_riel", (622, 584, 1050, 600), 18, "pavon", {}),
         ("rail", "riel", 622, 1050, 584, "top"),
-        ("lathe", "canon", [(1050, 9.0), (1418, 9.0)], 596, "pavon", 16),
-        ("lathe", "tubo_cargador", [(1050, 7.2), (1370, 7.2)], 625, "pavon", 16),
+        ("lathe", "canon", [(1050, 8.6), (1418, 8.6)], 597.5, "pavon", 16),
+        ("lathe", "tubo_cargador", [(1050, 7.2), (1370, 7.2)], 627, "pavon", 16),
         ("lathe", "tapa_tubo", [(1368, 7.6), (1370, 8.4), (1392, 8.4), (1394, 8.0), (1405, 8.0), (1408, 6.5)],
-         625, "pavon", 16),
-        ("s", "abrazadera", (1373, 605, 1385, 616), 10, "pavon", {"cut": False}),
-        ("lathe", "freno", [(1413, 9.6), (1416, 10.2), (1484, 10.2), (1488, 9.0)], 596, "pavon", 18),
+         627, "pavon", 16),
+        ("s", "abrazadera", (1373, 607, 1385, 618), 10, "pavon", {"cut": False}),
+        ("lathe", "freno", [(1413, 9.6), (1416, 10.2), (1484, 10.2), (1488, 9.0)], 597.5, "pavon", 18),
         ("s", "base_mira", [(1329, 584), (1333, 571), (1395, 571), (1395, 584)], 9, "pavon", {"cut": False}),
         ("s", "mira", (1351, 557, 1384, 572), 6, "pavon", {"cut": False}),
         ("pin", 656, 650, 2.6, 28), ("pin", 668, 638, 2.6, 28), ("pin", 694, 640, 2.6, 28),
@@ -212,6 +232,7 @@ SPEC["AT_Marlin336"] = dict(
         ("slot", 720, 610, 806, 628, "R"),
         ("poly", [(746, 638), (800, 638), (800, 655), (746, 655)], (58, 58, 60), "R"),
         *[("slot", 1440 + i * 14, 589, 1446 + i * 14, 601) for i in range(3)],
+        *[("slot", x - 10, y - 3, x + 10, y + 4) for x, y in ((290, 838), (332, 830), (377, 820), (422, 810))],
         ("poly", [(1352, 557), (1383, 557), (1383, 560), (1352, 560)], (90, 210, 70)),
         ("stip", [(478, 690), (560, 668), (565, 740), (500, 790), (475, 780)]),
         *[("line", [(158 + 0, 700 + i * 22), (200, 706 + i * 22)], 2.0, (14, 14, 15)) for i in range(9)],
@@ -263,7 +284,7 @@ def _from_concept():
             if k == "s":
                 _, name, reg, th, m, o = op
                 no = {"cut": not name.startswith(("cola", "poste", "punto", "alza", "aleta", "torreta", "montura"))}
-                hl = [o[h] for h in ("hole", "hole2") if h in o]
+                hl = [o[h] for h in ("hole", "hole2", "hole3", "hole4") if h in o]
                 if hl:
                     no["holes"] = hl
                     holes += hl
@@ -308,7 +329,7 @@ def _from_concept():
                     flip=sp["front"] < sp["back"], K=K, offset=(0.0, 0.0) if sp["kind"] == "handgun" else (0.006, -0.002),
                     kind=sp["kind"], parts=parts, decals=decals, holes=holes,
                     att=dict(muzzle=sp["muzzle"][0]), fill_w=24 if pistol else 26,
-                    fill_mat="pol" if pistol else "anod")
+                    fill_mat="pol" if pistol else "anod", fit_lathes=True)
         if "optic" in sp:
             spec["att"]["optic"] = sp["optic"]
             lo, hi = min(sp["front"], sp["back"]), max(sp["front"], sp["back"])

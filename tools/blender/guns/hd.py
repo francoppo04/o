@@ -56,7 +56,7 @@ class Gun:
 
     def region(self, reg, cut=True):
         g = self.ref.poly(reg)
-        if cut and self.sil is not None:
+        if cut and self.sil is not None and self.sp.get("sil_cut", True):     # sil_cut False: silueta solo para medir
             g = self.sil.intersection(g)
         return g
 
@@ -73,7 +73,9 @@ class Gun:
         if side.is_empty:
             print(f"[hd] {self.ID}: {name} vacío")
             return []
-        side = side.simplify(self.mm(o.get("tol", 0.5)), preserve_topology=True)
+        # tolerancia de ~1 px de la referencia: borra la escalera de píxeles de los bordes diagonales
+        tol = self.mm(o["tol"]) if "tol" in o else max(0.0005, 1.0 * self.sp["mm_px"] / 1000)
+        side = side.simplify(tol, preserve_topology=True)
         x0, z0, x1, z1 = side.bounds
         w = self.mm(w_mm)
         ct = self.mm(o.get("ct", min(0.12 * w_mm, 3.0)))
@@ -101,9 +103,9 @@ class Gun:
                 P += self.solid(name, reg, w, m, rest[0] if rest else {})
             elif k == "lathe":
                 _, name, prof, y, m, *rest = op
-                pts = sorted(((self.X(x), self.mm(r)) for x, r in prof), key=lambda q: q[0])
+                pts, z = self.lathe_fit(prof, y)
                 pts = [(pts[0][0], 0.0)] + pts + [(pts[-1][0], 0.0)]
-                ob = hs.lathe_x(name, pts, self.mat(m), z=self.Z(y), segs=rest[0] if rest else 16)
+                ob = hs.lathe_x(name, pts, self.mat(m), z=z, segs=rest[0] if rest else 16)
                 ob["bevel"] = (0.0, 1)
                 P.append(ob)
             elif k == "rail":
@@ -162,9 +164,9 @@ class Gun:
                 o = op[5] if len(op) > 5 else {}
                 feet.append((op[1], self._side(op[2], o), not o.get("y") and o.get("grow", True)))
             elif k == "lathe":
-                xs = [self.X(x) for x, _ in op[2]]
-                r = self.mm(max(rr for _, rr in op[2]))
-                feet.append((op[1], _box(min(xs), self.Z(op[3]) - r, max(xs), self.Z(op[3]) + r), False))
+                pts, z = self.lathe_fit(op[2], op[3])
+                r = max(rr for _, rr in pts)
+                feet.append((op[1], _box(pts[0][0], z - r, pts[-1][0], z + r), False))
             elif k == "rail" and op[5] == "top":
                 a, b = sorted((self.X(op[2]), self.X(op[3])))
                 feet.append((op[1], _box(a, self.Z(op[4]), b, self.Z(op[4]) + 0.0055), False))
@@ -201,8 +203,41 @@ class Gun:
         return self.solid("relleno", g.wkt, self.sp.get("fill_w", 22), self.sp.get("fill_mat", "pol"),
                           {"raw": True, "bevel": 1.0})
 
+    def lathe_fit(self, prof, y):
+        """Perfil de una pieza de revolución en metros. Con fit_lathes, el centro y el radio se ajustan a la
+        silueta (mediana de 9 cortes verticales) si la medición es confiable: radio dentro de ±25 % y centro a
+        menos de 0,4 radios del dibujado; si no, queda lo dibujado (caños tapados por otras piezas)."""
+        pts = sorted(((self.X(x), self.mm(r)) for x, r in prof), key=lambda q: q[0])
+        z = self.Z(y)
+        if self.sil is None or not self.sp.get("fit_lathes") or len(pts) < 2:
+            return pts, z
+        from shapely.geometry import LineString
+        import statistics
+        rmax = max(r for _, r in pts)
+        a, b = pts[0][0], pts[-1][0]
+        cs, rs = [], []
+        for i in range(9):
+            x = a + (b - a) * (0.1 + 0.8 * i / 8)
+            cut = LineString([(x, z - 3 * rmax), (x, z + 3 * rmax)]).intersection(self.sil)
+            segs = [g for g in getattr(cut, "geoms", [cut]) if g.geom_type == "LineString" and g.length > 0]
+            if not segs:
+                continue
+            seg = min(segs, key=lambda g: abs((g.bounds[1] + g.bounds[3]) / 2 - z))
+            lo, hi = seg.bounds[1], seg.bounds[3]
+            cs.append((lo + hi) / 2)
+            rs.append((hi - lo) / 2)
+        if len(rs) < 5:
+            return pts, z
+        c, r = statistics.median(cs), statistics.median(rs)
+        if not (0.75 < r / rmax < 1.25 and abs(c - z) < 0.4 * rmax):
+            return pts, z
+        k = r / rmax
+        return [(x, rr * k) for x, rr in pts], c
+
     def _side(self, reg, o):
         side = self.region(reg, o.get("cut", True))
+        if o.get("sil") and self.sil is not None and not self.sp.get("sil_cut", True):   # recorte pieza a pieza
+            side = side.intersection(self.sil)
         for h in o.get("holes", []):
             side = side.difference(self.ref.poly(h))
         return side
