@@ -99,6 +99,12 @@ function MC.Ventana:createChildren()
     end
     y = y + self.ticks:getHeight() + 10
 
+    self.catalogo = ISButton:new(10, y, self.width - 20, font + 12, "Catalogo de construccion (todos los objetos)",
+                                 self, function() if MC.abrirCatalogo then MC.abrirCatalogo() end end)
+    self.catalogo:initialise()
+    self:addChild(self.catalogo)
+    y = y + self.catalogo.height + 10
+
     self.aviso = ISLabel:new(10, y, 18, "", 1, 0.8, 0.4, 1, UIFont.Small, true)
     self:addChild(self.aviso)
     y = y + 22
@@ -191,6 +197,7 @@ end
 
 local function alTecla(tecla)
     if tecla == MC.TECLA and jugador() then MC.abrirCerrar() end
+    if tecla == Keyboard.KEY_ESCAPE and MC.soltar then MC.soltar() end      -- suelta la herramienta del catálogo
 end
 
 Events.OnCreatePlayer.Add(alCrearJugador)
