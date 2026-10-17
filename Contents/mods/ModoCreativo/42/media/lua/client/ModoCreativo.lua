@@ -12,6 +12,8 @@ MC.TECLA = Keyboard.KEY_INSERT
 MC.OPCIONES = {
     {clave = "construir", texto = "Construir sin materiales ni herramientas", metodo = "setBuildCheat"},
     {clave = "instantaneo", texto = "Acciones instantaneas (sin barra de progreso)", metodo = "setTimedActionInstantCheat"},
+    {clave = "recetas", texto = "Todas las recetas (aunque no esten aprendidas)", metodo = "learnRecipe",
+     aplicar = function(j, on) MC.recetas(j, on) end},
 }
 
 local VERDE = {r = 0.15, g = 0.5, b = 0.15, a = 0.95}
@@ -38,8 +40,9 @@ function MC.estado(j)
     if not j then return nil end
     local md = j:getModData()
     if type(md.ModoCreativo) ~= "table" then
-        md.ModoCreativo = {activo = false, construir = true, instantaneo = true}
+        md.ModoCreativo = {activo = false, construir = true, instantaneo = true, recetas = true}
     end
+    if md.ModoCreativo.recetas == nil then md.ModoCreativo.recetas = true end     -- partidas de la versión anterior
     return md.ModoCreativo
 end
 
@@ -48,12 +51,59 @@ function MC.disponible(metodo)
     return j ~= nil and j[metodo] ~= nil
 end
 
+-- recetas: al prender se enseñan todas las que el personaje no sabía (construcción incluida) y se anotan;
+-- al apagar se olvidan solo esas, así el personaje vuelve a saber exactamente lo que había aprendido jugando.
+local function todasLasRecetas()
+    local sm = getScriptManager()
+    for _, metodo in ipairs({"getAllCraftRecipes", "getAllRecipes"}) do
+        if sm[metodo] then
+            local ok, lista = pcall(sm[metodo], sm)
+            if ok and lista then return lista end
+        end
+    end
+    print("[ModoCreativo] no se pudo leer la lista de recetas")
+    return nil
+end
+
+function MC.recetas(j, on)
+    local md = j:getModData()
+    md.ModoCreativoRecetas = md.ModoCreativoRecetas or {}
+    local ensenadas = md.ModoCreativoRecetas
+    if on then
+        local lista = todasLasRecetas()
+        if not lista then return end
+        local n = 0
+        for i = 0, lista:size() - 1 do
+            local r = lista:get(i)
+            local ok, nombre = pcall(function() return r:getName() end)
+            if ok and nombre and not ensenadas[nombre] then
+                local sabe = false
+                pcall(function() sabe = j:isRecipeKnown(r) end)
+                if not sabe then pcall(function() sabe = j:isRecipeKnown(nombre) end) end
+                if not sabe and llamar(j, "learnRecipe", nombre) then
+                    ensenadas[nombre] = true
+                    n = n + 1
+                end
+            end
+        end
+        if n > 0 then print("[ModoCreativo] recetas enseñadas: " .. n) end
+    else
+        local conocidas
+        pcall(function() conocidas = j:getKnownRecipes() end)
+        for nombre, _ in pairs(ensenadas) do
+            if conocidas then pcall(function() conocidas:remove(nombre) end) end
+        end
+        md.ModoCreativoRecetas = {}
+    end
+end
+
 function MC.aplicar(j)
     j = j or jugador()
     local e = MC.estado(j)
     if not e then return end
     for _, op in ipairs(MC.OPCIONES) do
-        llamar(j, op.metodo, e.activo and e[op.clave] == true)
+        local on = e.activo and e[op.clave] == true
+        if op.aplicar then op.aplicar(j, on) else llamar(j, op.metodo, on) end
     end
     if ISBuildMenu then ISBuildMenu.cheat = e.activo and e.construir == true end   -- menú de construcción clásico
     if MC.lanzador then MC.lanzador:actualizar() end

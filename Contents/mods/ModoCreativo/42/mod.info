@@ -1,5 +1,5 @@
 name=Modo Creativo
 id=ModoCreativo
 author=francoppo04
-description=Modo creativo con ventana (boton flotante o tecla Insert): construir sin materiales, acciones instantaneas y un catalogo de construccion con todos los objetos del juego (paredes, pisos, muebles, accesorios, cercas, techos...) para colocarlos o borrarlos directo en el mundo. Para partidas de un jugador.
+description=Modo creativo con ventana (boton flotante o tecla Insert): construir sin materiales, todas las recetas sin aprenderlas, acciones instantaneas y un catalogo de construccion con todos los objetos del juego (paredes, pisos, muebles, accesorios, cercas, techos...) para colocarlos o borrarlos directo en el mundo. Para partidas de un jugador.
 version=1
