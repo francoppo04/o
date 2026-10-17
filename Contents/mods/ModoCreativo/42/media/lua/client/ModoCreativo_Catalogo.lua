@@ -4,8 +4,6 @@
 -- piezas), R rota entre sus orientaciones, Borrar saca el objeto de más arriba del cuadro.
 -- Cada llamada al juego va protegida y deja rastro [ModoCreativo] en la consola.
 
-require "BuildingObjects/ISBuildingObject"
-
 ModoCreativo = ModoCreativo or {}
 local MC = ModoCreativo
 
@@ -56,14 +54,15 @@ function MC.objetosDe(hoja)
     MC._objetos = MC._objetos or {}
     if MC._objetos[hoja] then return MC._objetos[hoja] end
     local lista, porClave = {}, {}
+    local nombres = {}
     local ok, t = pcall(function() return getWorld():getAllTiles(hoja) end)
-    if not (ok and t) then
-        log("no se pudieron leer los tiles de " .. hoja .. ": " .. tostring(t))
-        MC._objetos[hoja] = lista
-        return lista
+    if ok and t then
+        for i = 0, t:size() - 1 do table.insert(nombres, t:get(i)) end
     end
-    for i = 0, t:size() - 1 do
-        local nombre = t:get(i)
+    if #nombres == 0 and MC.TILESETS and MC.TILESETS[hoja] then
+        for i = 0, MC.TILESETS[hoja] - 1 do table.insert(nombres, hoja .. "_" .. i) end
+    end
+    for i, nombre in ipairs(nombres) do
         if getTexture(nombre) then
             local spr = getSprite(nombre)
             local props = spr and spr:getProperties()
@@ -73,7 +72,7 @@ function MC.objetosDe(hoja)
             local obj = porClave[clave]
             if not obj then
                 obj = {clave = clave, hoja = hoja, sprites = {}, variantes = {},
-                       nombre = custom and traducir(grupo, custom) or nombreLindo(hoja, i)}
+                       nombre = custom and traducir(grupo, custom) or nombreLindo(hoja, i - 1)}
                 porClave[clave] = obj
                 table.insert(lista, obj)
             end
@@ -100,14 +99,20 @@ end
 function MC.categorias()
     if MC._categorias then return MC._categorias end
     local porNombre, lista = {}, {}
+    local hojas = {}
     local ok, nombres = pcall(function() return getWorld():getAllTilesName() end)
-    if not (ok and nombres) then
-        log("no se pudo leer la lista de hojas de tiles (getAllTilesName): " .. tostring(nombres))
-        MC._categorias = lista
-        return lista
+    if ok and nombres then
+        for i = 0, nombres:size() - 1 do table.insert(hojas, nombres:get(i)) end
+    else
+        log("getAllTilesName no disponible: " .. tostring(nombres))
     end
-    for i = 0, nombres:size() - 1 do
-        local hoja = nombres:get(i)
+    if #hojas == 0 and MC.TILESETS then           -- plan B: lista sacada de los archivos del juego
+        for nombre, _ in pairs(MC.TILESETS) do table.insert(hojas, nombre) end
+        log("hojas de tiles desde la lista del mod: " .. #hojas)
+    else
+        log("hojas de tiles del juego: " .. #hojas)
+    end
+    for _, hoja in ipairs(hojas) do
         local cat, orden = categoriaDe(hoja)
         if not porNombre[cat] then
             porNombre[cat] = {nombre = cat, orden = orden, hojas = {}}
@@ -120,7 +125,7 @@ function MC.categorias()
         if a.orden ~= b.orden then return a.orden < b.orden end
         return a.nombre < b.nombre
     end)
-    MC._categorias = lista
+    if #lista > 0 then MC._categorias = lista end      -- vacía: se vuelve a intentar la próxima vez
     return lista
 end
 
@@ -193,54 +198,65 @@ function MC.borrar(x, y, z)
 end
 
 -- ------------------------------------------------------------ herramienta en el mundo (cursor)
-MC.Cursor = ISBuildingObject:derive("ModoCreativoCursor")
-
-function MC.Cursor:new(sprite, borrar)
-    local o = {}
-    setmetatable(o, self)
-    self.__index = self
-    o:init()
-    if sprite then
-        o:setSprite(sprite)
-        o:setNorthSprite(sprite)
+-- ISBuildingObject está en lua/server, que carga después de client: la clase se arma recién al usarla.
+local function claseCursor()
+    if MC.Cursor then return MC.Cursor end
+    if not ISBuildingObject then
+        log("ISBuildingObject no está cargado todavía")
+        return nil
     end
-    o.player = 0
-    o.borrarModo = borrar
-    o.skipBuildAction = true
-    o.noNeedHammer = true
-    o.canBeAlwaysPlaced = true
-    o.dragNilAfterPlace = false
-    return o
-end
+    local Cursor = ISBuildingObject:derive("ModoCreativoCursor")
 
-function MC.Cursor:isValid(square)
-    return square ~= nil or not self.borrarModo
-end
-
-function MC.Cursor:tryBuild(x, y, z)
-    self:create(x, y, z, self.north, self:getSprite())
-end
-
-function MC.Cursor:create(x, y, z, north, sprite)
-    if self.borrarModo then MC.borrar(x, y, z) else MC.colocar(sprite, x, y, z) end
-end
-
-function MC.Cursor:render(x, y, z, square)
-    if self.borrarModo then
-        if MC._resaltado then pcall(function() MC._resaltado:setHighlighted(false) end) end
-        MC._resaltado = nil
-        local objs = square and square:getObjects()
-        if objs and objs:size() > 0 then
-            local obj = objs:get(objs:size() - 1)
-            pcall(function()
-                obj:setHighlighted(true)
-                obj:setHighlightColor(1, 0.2, 0.2, 0.8)
-            end)
-            MC._resaltado = obj
+    function Cursor:new(sprite, borrar)
+        local o = {}
+        setmetatable(o, self)
+        self.__index = self
+        o:init()
+        if sprite then
+            o:setSprite(sprite)
+            o:setNorthSprite(sprite)
         end
-        return
+        o.player = 0
+        o.borrarModo = borrar
+        o.skipBuildAction = true
+        o.noNeedHammer = true
+        o.canBeAlwaysPlaced = true
+        o.dragNilAfterPlace = false
+        return o
     end
-    ISBuildingObject.render(self, x, y, z, square)
+
+    function Cursor:isValid(square)
+        return square ~= nil or not self.borrarModo
+    end
+
+    function Cursor:tryBuild(x, y, z)
+        self:create(x, y, z, self.north, self:getSprite())
+    end
+
+    function Cursor:create(x, y, z, north, sprite)
+        if self.borrarModo then MC.borrar(x, y, z) else MC.colocar(sprite, x, y, z) end
+    end
+
+    function Cursor:render(x, y, z, square)
+        if self.borrarModo then
+            if MC._resaltado then pcall(function() MC._resaltado:setHighlighted(false) end) end
+            MC._resaltado = nil
+            local objs = square and square:getObjects()
+            if objs and objs:size() > 0 then
+                local obj = objs:get(objs:size() - 1)
+                pcall(function()
+                    obj:setHighlighted(true)
+                    obj:setHighlightColor(1, 0.2, 0.2, 0.8)
+                end)
+                MC._resaltado = obj
+            end
+            return
+        end
+        ISBuildingObject.render(self, x, y, z, square)
+    end
+
+    MC.Cursor = Cursor
+    return Cursor
 end
 
 -- estado de la herramienta: {objeto, variante} para colocar, o {borrar = true}
@@ -253,7 +269,9 @@ function MC.soltar()
 end
 
 local function tomar(sprite, borrar)
-    local ok, err = pcall(function() getCell():setDrag(MC.Cursor:new(sprite, borrar), 0) end)
+    local Cursor = claseCursor()
+    if not Cursor then return end
+    local ok, err = pcall(function() getCell():setDrag(Cursor:new(sprite, borrar), 0) end)
     if not ok then log("no se pudo tomar la herramienta: " .. tostring(err)) end
 end
 
