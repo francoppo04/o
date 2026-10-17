@@ -1,7 +1,8 @@
--- Modo Creativo: ventana para prender y apagar
+-- Modo Creativo (núcleo): estado guardado con la partida, opciones y botón flotante.
 --   * construir sin materiales ni herramientas (poder "BuildCheat" del jugador)
 --   * acciones instantáneas, sin barra de progreso (poder "TimedActionInstant")
--- Se abre con el botón flotante "Creativo" (arrastrable) o con la tecla Insert.
+--   * todas las recetas, aunque no estén aprendidas (se olvidan al apagar)
+-- La ventana está en ModoCreativo_UI.lua y el catálogo en ModoCreativo_Catalogo.lua.
 -- Pensado para un jugador. Cada llamada al juego va protegida: si un nombre cambió, la ventana lo muestra
 -- como "no disponible" y la consola lo anota con [ModoCreativo]; nada se rompe.
 
@@ -10,14 +11,14 @@ local MC = ModoCreativo
 
 MC.TECLA = Keyboard.KEY_INSERT
 MC.OPCIONES = {
-    {clave = "construir", texto = "Construir sin materiales ni herramientas", metodo = "setBuildCheat"},
-    {clave = "instantaneo", texto = "Acciones instantaneas (sin barra de progreso)", metodo = "setTimedActionInstantCheat"},
-    {clave = "recetas", texto = "Todas las recetas (aunque no esten aprendidas)", metodo = "learnRecipe",
+    {clave = "construir", titulo = "Construir gratis", metodo = "setBuildCheat",
+     texto = "Todo lo del menu de construccion se puede hacer sin materiales ni herramientas."},
+    {clave = "instantaneo", titulo = "Acciones instantaneas", metodo = "setTimedActionInstantCheat",
+     texto = "Construir, desarmar, craftear o mover muebles se hace al instante, sin barra de progreso."},
+    {clave = "recetas", titulo = "Todas las recetas", metodo = "learnRecipe",
+     texto = "Aparecen todas las construcciones y recetas aunque no las hayas aprendido. Al apagar se olvidan.",
      aplicar = function(j, on) MC.recetas(j, on) end},
 }
-
-local VERDE = {r = 0.15, g = 0.5, b = 0.15, a = 0.95}
-local GRIS = {r = 0.25, g = 0.25, b = 0.25, a = 0.95}
 
 local function jugador()
     return getSpecificPlayer(0)
@@ -120,125 +121,72 @@ function MC.setActivo(on)
            on and 120 or 255, on and 255 or 120, 120, 300)
 end
 
--- ------------------------------------------------------------ ventana
-MC.Ventana = ISCollapsableWindow:derive("ModoCreativoVentana")
+MC.jugador = jugador
+MC.llamar = llamar
 
-function MC.Ventana:new(x, y)
-    local o = ISCollapsableWindow.new(self, x, y, 380, 230)
-    o.title = "Modo Creativo"
-    o.resizable = false
-    return o
-end
-
-function MC.Ventana:createChildren()
-    ISCollapsableWindow.createChildren(self)
-    local y = self:titleBarHeight() + 10
-    local font = getTextManager():getFontHeight(UIFont.Medium)
-
-    self.principal = ISButton:new(10, y, self.width - 20, font + 16, "", self, MC.Ventana.onPrincipal)
-    self.principal:initialise()
-    self.principal.font = UIFont.Medium
-    self:addChild(self.principal)
-    y = y + self.principal.height + 12
-
-    self.ticks = ISTickBox:new(10, y, self.width - 20, 20, "", self, MC.Ventana.onTick)
-    self.ticks:initialise()
-    self:addChild(self.ticks)
-    for _, op in ipairs(MC.OPCIONES) do
-        self.ticks:addOption(op.texto)
-    end
-    y = y + self.ticks:getHeight() + 10
-
-    self.catalogo = ISButton:new(10, y, self.width - 20, font + 12, "Catalogo de construccion (todos los objetos)",
-                                 self, function() if MC.abrirCatalogo then MC.abrirCatalogo() end end)
-    self.catalogo:initialise()
-    self:addChild(self.catalogo)
-    y = y + self.catalogo.height + 10
-
-    self.aviso = ISLabel:new(10, y, 18, "", 1, 0.8, 0.4, 1, UIFont.Small, true)
-    self:addChild(self.aviso)
-    y = y + 22
-
-    self.ayuda = ISLabel:new(10, y, 18, "Tecla Insert: abrir o cerrar esta ventana.", 0.7, 0.7, 0.7, 1,
-                             UIFont.Small, true)
-    self:addChild(self.ayuda)
-    self:setHeight(y + 28)
-    self:actualizar()
-end
-
-function MC.Ventana:onPrincipal()
-    local e = MC.estado()
-    if e then MC.setActivo(not e.activo) end
-end
-
-function MC.Ventana:onTick(indice, marcado)
-    local e = MC.estado()
-    local op = MC.OPCIONES[indice]
-    if not e or not op then return end
-    e[op.clave] = marcado
-    MC.aplicar()
-end
-
-function MC.Ventana:actualizar()
-    local e = MC.estado()
-    if not e or not self.principal then return end
-    self.principal:setTitle(e.activo and "MODO CREATIVO: ACTIVADO" or "MODO CREATIVO: DESACTIVADO")
-    self.principal.backgroundColor = e.activo and VERDE or GRIS
-    local faltan = {}
-    for i, op in ipairs(MC.OPCIONES) do
-        self.ticks:setSelected(i, e[op.clave] == true)
-        if not MC.disponible(op.metodo) then table.insert(faltan, op.texto) end
-    end
-    self.aviso:setName(#faltan > 0 and ("No disponible en esta version: " .. table.concat(faltan, ", ")) or "")
-end
-
-function MC.Ventana:close()
-    self:setVisible(false)
-    self:removeFromUIManager()
-    MC.ventana = nil
-end
-
-function MC.abrirCerrar()
-    if MC.ventana then
-        MC.ventana:close()
-        return
-    end
-    local x = MC.lanzador and MC.lanzador:getX() or getCore():getScreenWidth() / 2 - 190
-    local y = MC.lanzador and (MC.lanzador:getY() + MC.lanzador:getHeight() + 4) or 60
-    MC.ventana = MC.Ventana:new(x, y)
-    MC.ventana:initialise()
-    MC.ventana:addToUIManager()
-end
-
--- ------------------------------------------------------------ botón flotante (arrastrable)
+-- ------------------------------------------------------------ botón flotante (arrastrable, con ícono)
 MC.Lanzador = ISPanel:derive("ModoCreativoLanzador")
+MC.ICONO = "media/textures/ModoCreativo_icono.png"
 
 function MC.Lanzador:new(x, y)
-    local o = ISPanel.new(self, x, y, 110, 30)
+    local o = ISPanel.new(self, x, y, 48, 48)
     o.moveWithMouse = true
-    o.background = true
-    o.backgroundColor = {r = 0, g = 0, b = 0, a = 0.5}
-    o.borderColor = {r = 1, g = 1, b = 1, a = 0.3}
+    o.background = false
+    o.icono = getTexture(MC.ICONO)
     return o
 end
 
-function MC.Lanzador:createChildren()
-    self.btn = ISButton:new(4, 4, self.width - 8, self.height - 8, "Creativo", self, MC.abrirCerrar)
-    self.btn:initialise()
-    self:addChild(self.btn)
-    self:actualizar()
+function MC.Lanzador:prerender()
+    local e = MC.estado()
+    local on = e and e.activo
+    local hover = self:isMouseOver()
+    self:drawRect(0, 0, self.width, self.height, hover and 0.85 or 0.7, 0.08, 0.09, 0.1)
+    if on then
+        self:drawRectBorder(0, 0, self.width, self.height, 1, 0.35, 0.85, 0.35)
+        self:drawRectBorder(1, 1, self.width - 2, self.height - 2, 1, 0.35, 0.85, 0.35)
+    else
+        self:drawRectBorder(0, 0, self.width, self.height, 0.8, 0.5, 0.5, 0.5)
+    end
+    if self.icono then
+        self:drawTextureScaledAspect(self.icono, 6, 6, self.width - 12, self.height - 12, 1, 1, 1, 1)
+    else
+        self:drawTextCentre("MC", self.width / 2, self.height / 2 - 8, 1, 1, 1, 1, UIFont.Medium)
+    end
+    if hover then
+        local txt = (on and "Modo Creativo: activado" or "Modo Creativo: apagado") .. "  (Insert)"
+        local w = getTextManager():MeasureStringX(UIFont.Small, txt) + 12
+        self:drawRect(self.width + 6, 12, w, 22, 0.85, 0.05, 0.05, 0.05)
+        self:drawText(txt, self.width + 12, 15, 1, 1, 1, 1, UIFont.Small)
+    end
 end
 
-function MC.Lanzador:actualizar()
-    local e = MC.estado()
-    if not self.btn or not e then return end
-    self.btn.backgroundColor = e.activo and VERDE or GRIS
+function MC.Lanzador:onMouseDown(x, y)
+    self.clickX, self.clickY = getMouseX(), getMouseY()
+    return ISPanel.onMouseDown(self, x, y)
 end
+
+function MC.Lanzador:onMouseUp(x, y)
+    ISPanel.onMouseUp(self, x, y)
+    -- click sin arrastrar: abre la ventana; si se arrastró, guarda la posición
+    if self.clickX and math.abs(getMouseX() - self.clickX) < 4 and math.abs(getMouseY() - self.clickY) < 4 then
+        MC.abrirCerrar()
+    else
+        local e = MC.estado()
+        if e then e.lanzadorX, e.lanzadorY = self:getX(), self:getY() end
+    end
+    self.clickX = nil
+    return true
+end
+
+function MC.Lanzador:actualizar() end
 
 local function alCrearJugador(indice, j)
     if indice ~= 0 then return end
     if not MC.lanzador then
-        MC.lanzador = MC.Lanzador:new(getCore():getScreenWidth() / 2 - 55, 8)
+        local e = MC.estado(j)
+        local x = (e and e.lanzadorX) or 12
+        local y = (e and e.lanzadorY) or (getCore():getScreenHeight() / 2 - 24)
+        MC.lanzador = MC.Lanzador:new(x, y)
         MC.lanzador:initialise()
         MC.lanzador:addToUIManager()
     end
@@ -247,7 +195,8 @@ end
 
 local function alTecla(tecla)
     if tecla == MC.TECLA and jugador() then MC.abrirCerrar() end
-    if tecla == Keyboard.KEY_ESCAPE and MC.soltar then MC.soltar() end      -- suelta la herramienta del catálogo
+    if tecla == Keyboard.KEY_R and MC.rotar then MC.rotar() end                 -- rota el objeto del catálogo
+    if tecla == Keyboard.KEY_ESCAPE and MC.soltar then MC.soltar() end          -- suelta la herramienta
 end
 
 Events.OnCreatePlayer.Add(alCrearJugador)
